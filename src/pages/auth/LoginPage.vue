@@ -25,7 +25,17 @@ async function handleLogin() {
     }
     router.push('/admin')
   } catch (err) {
-    error.value = err.response?.data?.message || 'Error al iniciar sesión'
+    // Extraer mensaje de error del servidor
+    const response = err.response?.data
+    if (response?.message) {
+      error.value = response.message
+    } else if (response?.errors) {
+      // Si hay errores de validación
+      error.value = Object.values(response.errors).flat().join(', ')
+    } else {
+      error.value = `Error: ${err.response?.status || 'desconocido'} - ${err.message}`
+    }
+    console.error('Login error:', err.response?.data || err.message)
   } finally {
     isLoading.value = false
   }

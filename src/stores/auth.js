@@ -14,14 +14,31 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true
     error.value = null
     try {
+      console.log('[Auth] Iniciando login con:', { email })
       const response = await authService.login(email, password)
-      token.value = response.data.token
-      user.value = response.data.user
-      localStorage.setItem('token', token.value)
-      localStorage.setItem('user', JSON.stringify(user.value))
+      console.log('[Auth] Respuesta del servidor:', response)
+      
+      // El backend devuelve {data: {token, user, ...}}
+      const loginData = response.data.data || response.data
+      const receivedToken = loginData.token
+      const receivedUser = loginData.user
+      
+      console.log('[Auth] Token:', receivedToken)
+      console.log('[Auth] Usuario:', receivedUser)
+      
+      if (!receivedToken) {
+        throw new Error('Token no recibido del servidor')
+      }
+      
+      token.value = receivedToken
+      user.value = receivedUser
+      localStorage.setItem('token', receivedToken)
+      localStorage.setItem('user', JSON.stringify(receivedUser))
+      console.log('[Auth] Login exitoso, token guardado')
       return response
     } catch (err) {
-      error.value = err.response?.data?.message || 'Error al iniciar sesión'
+      console.error('[Auth] Error en login:', err)
+      error.value = err.response?.data?.message || err.message || 'Error al iniciar sesión'
       throw err
     } finally {
       isLoading.value = false
@@ -42,11 +59,30 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function loadFromStorage() {
-    const storedToken = localStorage.getItem('token')
-    const storedUser = localStorage.getItem('user')
-    if (storedToken) {
-      token.value = storedToken
-      user.value = storedUser ? JSON.parse(storedUser) : null
+    try {
+      const storedToken = localStorage.getItem('token')
+      const storedUser = localStorage.getItem('user')
+      
+      if (storedToken && storedToken !== 'undefined') {
+        token.value = storedToken
+        if (storedUser && storedUser !== 'undefined') {
+          try {
+            user.value = JSON.parse(storedUser)
+          } catch (e) {
+            // Si el JSON es inválido, limpiamos el storage
+            localStorage.removeItem('user')
+            user.value = null
+          }
+        }
+      } else {
+        // Limpiar localStorage si contiene 'undefined'
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+      }
+    } catch (error) {
+      console.error('Error loading from storage:', error)
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
     }
   }
 
