@@ -1,7 +1,9 @@
 import { ref, computed } from 'vue'
 import productsService from '@/services/products.service'
+import { useNotification } from '@/composables/useNotification'
 
 export const useProducts = () => {
+  const { success, error: showError, warning } = useNotification()
   const products = ref([])
   const categories = ref([])
   const brands = ref([])
@@ -66,9 +68,11 @@ export const useProducts = () => {
     try {
       const response = await productsService.createProduct(data)
       await fetchProducts(1) // Recargar lista
+      success('Producto creado exitosamente')
       return response.data
     } catch (err) {
       error.value = err.response?.data?.message || 'Error al crear producto'
+      showError(error.value)
       throw err
     } finally {
       isLoading.value = false
@@ -82,9 +86,11 @@ export const useProducts = () => {
     try {
       const response = await productsService.updateProduct(id, data)
       await fetchProducts(currentPage.value) // Recargar lista
+      success('Producto actualizado exitosamente')
       return response.data
     } catch (err) {
       error.value = err.response?.data?.message || 'Error al actualizar producto'
+      showError(error.value)
       throw err
     } finally {
       isLoading.value = false
@@ -113,6 +119,7 @@ export const useProducts = () => {
     try {
       await productsService.deleteProduct(id)
       await fetchProducts(currentPage.value) // Recargar lista
+      success('Producto eliminado exitosamente')
     } catch (err) {
       // Si el error indica que el producto tiene ventas, deshabilitar en su lugar
       const message = err.response?.data?.message || ''
@@ -120,12 +127,15 @@ export const useProducts = () => {
         try {
           await productsService.disableProduct(id)
           await fetchProducts(currentPage.value)
+          warning('Producto deshabilitado (tiene ventas asociadas)')
         } catch (disableErr) {
           error.value = disableErr.response?.data?.message || 'Error al deshabilitar producto'
+          showError(error.value)
           throw disableErr
         }
       } else {
         error.value = err.response?.data?.message || 'Error al eliminar producto'
+        showError(error.value)
         throw err
       }
     } finally {
@@ -140,8 +150,10 @@ export const useProducts = () => {
     try {
       await productsService.deleteProducts(ids)
       await fetchProducts(1) // Recargar desde página 1
+      success(`${ids.length} producto(s) eliminado(s) exitosamente`)
     } catch (err) {
       error.value = err.response?.data?.message || 'Error al eliminar productos'
+      showError(error.value)
       throw err
     } finally {
       isLoading.value = false
