@@ -5,19 +5,14 @@ import Sidebar from '@/components/Sidebar.vue'
 
 <template>
   <div class="bg-gray-50 dark:bg-gray-900">
-    <!-- Navbar fixed en top -->
-    <Navbar />
-
     <!-- Main content area con sidebar -->
-    <div class="flex w-full pt-20">
+    <div class="flex w-full">
       <!-- Sidebar fixed a la izquierda -->
       <Sidebar />
 
       <!-- Main content area -->
-      <main class="flex-1 overflow-y-auto">
-        <div class="px-4 py-6 lg:px-8 max-w-7xl mx-auto w-full">
-          <slot />
-        </div>
+      <main class="flex-1 overflow-y-auto" style="margin: 1vw;">
+        <slot />
       </main>
     </div>
   </div>

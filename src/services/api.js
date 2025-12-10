@@ -5,7 +5,6 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://app.admin-ecommerce-back
 const api = axios.create({
   baseURL: `${API_URL}/api`,
   headers: {
-    'Content-Type': 'application/json',
     'Accept': 'application/json'
   },
   withCredentials: false
@@ -17,6 +16,10 @@ api.interceptors.request.use(
     const token = localStorage.getItem('token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
+    }
+    // No establecer Content-Type si es FormData (axios lo hace automáticamente)
+    if (!(config.data instanceof FormData)) {
+      config.headers['Content-Type'] = 'application/json'
     }
     return config
   },

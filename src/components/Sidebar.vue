@@ -31,13 +31,13 @@ const menuItems = [
   {
     id: 'overview',
     label: 'Inicio',
-    icon: 'M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11 4a1 1 0 10-2 0v4a1 1 0 102 0V7zm-3 1a1 1 0 10-2 0v3a1 1 0 102 0V8zM8 9a1 1 0 00-2 0v2a1 1 0 102 0V9z',
+    icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
     route: 'AdminDashboard'
   },
   {
     id: 'products',
     label: 'Productos',
-    icon: 'M9 19V6l-5 5m0 0h14m-14 0l5-5',
+    icon: 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z',
     hasSubmenu: true,
     submenu: [
       { label: 'Lista de Productos', route: 'ProductsList' },
@@ -49,7 +49,7 @@ const menuItems = [
   {
     id: 'orders',
     label: 'Órdenes',
-    icon: 'M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z',
+    icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
     hasSubmenu: true,
     submenu: [
       { label: 'Lista de Órdenes', route: 'OrdersList' },
@@ -60,13 +60,13 @@ const menuItems = [
   {
     id: 'inventory',
     label: 'Inventario',
-    icon: 'M20 7l-8-4-8 4m0 0l8 4m-8-4v10l8 4m0-10l8 4m-8-4v10l8-4m0 0l-8-4m8 4v10l-8 4',
+    icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
     route: 'Inventory'
   },
   {
     id: 'customers',
     label: 'Clientes',
-    icon: 'M12 4.354a4 4 0 110 8.646 4 4 0 010-8.646zM3 20.228A6 6 0 0112 4c3.331 0 6.182 1.897 7.703 4.642',
+    icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
     route: 'Customers'
   }
 ]
@@ -128,7 +128,7 @@ const menuItems = [
               class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group transition"
               :class="{ 'bg-blue-100 dark:bg-blue-900': isActive(item.route) }"
             >
-              <svg class="w-6 h-6 text-gray-400 transition group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20">
+              <svg class="w-6 h-6 text-gray-400 transition group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path :d="item.icon"></path>
               </svg>
               <span class="ml-3">{{ item.label }}</span>
@@ -139,7 +139,7 @@ const menuItems = [
               @click="toggleMenu(item.id)"
               class="flex items-center p-2 w-full text-base font-medium text-gray-900 rounded-lg transition dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
             >
-              <svg class="w-6 h-6 text-gray-400 transition group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20">
+              <svg class="w-6 h-6 text-gray-400 transition group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path :d="item.icon"></path>
               </svg>
               <span class="flex-1 ml-3 text-left">{{ item.label }}</span>
