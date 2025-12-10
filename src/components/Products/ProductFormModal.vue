@@ -150,6 +150,7 @@
 import { ref, watch, computed } from 'vue'
 import { useProductStore } from '@/stores/product'
 import { useProducts } from '@/composables/useProducts'
+import { useFormValidation } from '@/composables/useFormValidation'
 import GeneralSection from './Sections/GeneralSection.vue'
 import ImagesSection from './Sections/ImagesSection.vue'
 import LogisticSection from './Sections/LogisticSection.vue'
@@ -166,6 +167,7 @@ const emit = defineEmits(['close', 'saved'])
 
 const store = useProductStore()
 const { createProduct, updateProduct } = useProducts()
+const { validateField, markFieldAsTouched, getFieldError, clearAllErrors, resetTouched } = useFormValidation()
 
 const isOpen = ref(false)
 const activeTab = ref(0)
@@ -207,6 +209,25 @@ const tabs = [
   { label: 'Logística' },
   { label: 'Características' }
 ]
+
+// Método para validar un campo y marcarlo como tocado
+function handleFieldChange(fieldName, value) {
+  validateField(fieldName, value)
+  markFieldAsTouched(fieldName)
+}
+
+// Método para obtener el error de un campo
+function getFieldErrorMessage(fieldName) {
+  return getFieldError(fieldName)
+}
+
+// Método para marcar un campo como tocado
+function handleFieldBlur(fieldName, value) {
+  markFieldAsTouched(fieldName)
+  if (!getFieldError(fieldName)) {
+    validateField(fieldName, value)
+  }
+}
 
 // Load product data when editingProduct changes
 watch(() => props.editingProduct, (newVal) => {
@@ -413,10 +434,16 @@ function buildFormData() {
 
 function openModal() {
   isOpen.value = true
+  // Limpiar errores y campos tocados al abrir
+  clearAllErrors()
+  resetTouched()
 }
 
 function closeModal() {
   isOpen.value = false
+  // Limpiar errores y campos tocados al cerrar
+  clearAllErrors()
+  resetTouched()
   emit('close')
 }
 
