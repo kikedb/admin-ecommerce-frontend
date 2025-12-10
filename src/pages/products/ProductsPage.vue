@@ -90,7 +90,6 @@ const handleCreateNew = () => {
 }
 
 const handleFormClose = () => {
-  formModalOpen.value = false
   editingProduct.value = null
 }
 
