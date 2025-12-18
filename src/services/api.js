@@ -1,11 +1,12 @@
 import axios from 'axios'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://app.admin-ecommerce-backend'
+const API_URL = import.meta.env.VITE_API_URL || 'http://192.168.56.56'
 
 const api = axios.create({
   baseURL: `${API_URL}/api`,
   headers: {
-    'Accept': 'application/json'
+    'Accept': 'application/json',
+    'Content-Type': 'application/json'
   },
   withCredentials: false
 })
