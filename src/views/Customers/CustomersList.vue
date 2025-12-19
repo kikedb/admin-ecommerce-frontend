@@ -3,12 +3,20 @@
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Clientes</h1>
-      <router-link 
-        to="/customers/create"
-        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-      >
-        + Nuevo Cliente
-      </router-link>
+      <div class="flex gap-2">
+        <button
+          @click="showImportExport = true"
+          class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+        >
+          Importar/Exportar
+        </button>
+        <router-link 
+          to="/customers/create"
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+        >
+          + Nuevo Cliente
+        </router-link>
+      </div>
     </div>
 
     <!-- Filtros -->
@@ -93,6 +101,12 @@
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
               <router-link 
+                :to="`/customers/${customer.id}`"
+                class="text-green-600 hover:text-green-900 mr-3"
+              >
+                Ver
+              </router-link>
+              <router-link 
                 :to="`/customers/${customer.id}/edit`"
                 class="text-blue-600 hover:text-blue-900 mr-3"
               >
@@ -131,6 +145,23 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal Importar/Exportar -->
+    <div v-if="showImportExport" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+          <h2 class="text-xl font-semibold text-gray-900">Importar / Exportar Clientes</h2>
+          <button @click="showImportExport = false" class="text-gray-400 hover:text-gray-600">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="p-6">
+          <CustomerImportExport @import-success="handleImportSuccess" />
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -138,11 +169,13 @@
 import { ref, computed, onMounted } from 'vue'
 import customersService from '@/services/customers.service'
 import { useRouter } from 'vue-router'
+import CustomerImportExport from '@/components/customers/CustomerImportExport.vue'
 
 const router = useRouter()
 const loading = ref(false)
 const customers = ref([])
 const search = ref('')
+const showImportExport = ref(false)
 const filters = ref({
   customer_type: '',
   status: '',
@@ -251,6 +284,11 @@ async function deleteCustomer(id) {
     console.error('Error deleting customer:', error)
     alert('Error al eliminar el cliente')
   }
+}
+
+function handleImportSuccess() {
+  showImportExport.value = false
+  loadCustomers(pagination.value.current_page)
 }
 
 onMounted(() => {

@@ -91,5 +91,38 @@ export default {
         page
       }
     })
+  },
+
+  /**
+   * Exporta clientes a Excel
+   * @returns {Promise<Blob>} Archivo Excel
+   */
+  exportCustomers() {
+    return api.get('/admin/customers/export', {
+      responseType: 'blob'
+    })
+  },
+
+  /**
+   * Importa clientes desde Excel/CSV
+   * @param {File} file - Archivo Excel o CSV
+   * @returns {Promise<object>} Resultado de la importación
+   */
+  importCustomers(file) {
+    const formData = new FormData()
+    formData.append('file', file)
+    return api.post('/admin/customers/import', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+  },
+
+  /**
+   * Obtiene la plantilla de importación
+   * @returns {Promise<object>} Estructura de columnas y ejemplos
+   */
+  getImportTemplate() {
+    return api.get('/admin/customers/template')
   }
 }

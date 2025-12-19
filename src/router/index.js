@@ -10,6 +10,7 @@ import InventoryPage from '@/pages/inventory/InventoryPage.vue'
 import CustomersList from '@/views/Customers/CustomersList.vue'
 import CustomerCreate from '@/views/Customers/CustomerCreate.vue'
 import CustomerEdit from '@/views/Customers/CustomerEdit.vue'
+import CustomerDetail from '@/views/Customers/CustomerDetail.vue'
 
 const routes = [
   {
@@ -52,6 +53,12 @@ const routes = [
     path: '/customers/create',
     name: 'CustomerCreate',
     component: CustomerCreate,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/customers/:id',
+    name: 'CustomerDetail',
+    component: CustomerDetail,
     meta: { requiresAuth: true }
   },
   {

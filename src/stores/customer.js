@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import customersService from '@/services/customers.service'
 
 export const useCustomerStore = defineStore('customer', () => {
   // Estado
@@ -241,6 +242,44 @@ export const useCustomerStore = defineStore('customer', () => {
     return data
   }
 
+  async function loadCustomerDetail(customerId) {
+    try {
+      const response = await customersService.getCustomerById(customerId)
+      loadCustomer(response.data.data)
+      return response.data.data
+    } catch (error) {
+      console.error('Error al cargar detalle del cliente:', error)
+      throw error
+    }
+  }
+
+  async function exportCustomers() {
+    try {
+      const response = await customersService.exportCustomers()
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `clientes_${new Date().getTime()}.xlsx`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Error al exportar clientes:', error)
+      throw error
+    }
+  }
+
+  async function importCustomers(file) {
+    try {
+      const response = await customersService.importCustomers(file)
+      return response.data
+    } catch (error) {
+      console.error('Error al importar clientes:', error)
+      throw error
+    }
+  }
+
   return {
     // State
     id,
@@ -289,6 +328,9 @@ export const useCustomerStore = defineStore('customer', () => {
     // Actions
     clearForm,
     loadCustomer,
-    getFormData
+    getFormData,
+    loadCustomerDetail,
+    exportCustomers,
+    importCustomers
   }
 })
