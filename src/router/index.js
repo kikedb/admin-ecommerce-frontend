@@ -7,7 +7,9 @@ import AdminDashboard from '@/pages/admin/AdminDashboard.vue'
 import ProductsPage from '@/pages/products/ProductsPage.vue'
 import OrdersPage from '@/pages/orders/OrdersPage.vue'
 import InventoryPage from '@/pages/inventory/InventoryPage.vue'
-import CustomersPage from '@/pages/customers/CustomersPage.vue'
+import CustomersList from '@/views/Customers/CustomersList.vue'
+import CustomerCreate from '@/views/Customers/CustomerCreate.vue'
+import CustomerEdit from '@/views/Customers/CustomerEdit.vue'
 
 const routes = [
   {
@@ -41,9 +43,21 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/admin/customers',
-    name: 'Customers',
-    component: CustomersPage,
+    path: '/customers',
+    name: 'CustomersList',
+    component: CustomersList,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/customers/create',
+    name: 'CustomerCreate',
+    component: CustomerCreate,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/customers/:id/edit',
+    name: 'CustomerEdit',
+    component: CustomerEdit,
     meta: { requiresAuth: true }
   },
   {
