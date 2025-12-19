@@ -7,7 +7,7 @@ export function useSelectOptions() {
   const series = ref([])
   const colors = ref([])
   const materials = ref([])
-  const loading = ref(false)
+  const loading = ref(true) // Inicia en true para deshabilitar dropdowns
   const error = ref(null)
 
   const loadOptions = async () => {

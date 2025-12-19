@@ -122,8 +122,9 @@
           v-model.number="store.categoryId"
           class="form-select"
           @change="handleCategoryChange"
+          :disabled="loading"
         >
-          <option value="">Seleccionar</option>
+          <option value="">{{ loading ? 'Cargando...' : 'Seleccionar' }}</option>
           <option v-for="cat in categories || []" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
         </select>
       </div>
@@ -135,8 +136,9 @@
           id="brand"
           v-model.number="store.brandId"
           class="form-select"
+          :disabled="loading"
         >
-          <option value="">Seleccionar</option>
+          <option value="">{{ loading ? 'Cargando...' : 'Seleccionar' }}</option>
           <option v-for="brand in brands || []" :key="brand.id" :value="brand.id">{{ brand.name }}</option>
         </select>
       </div>
@@ -149,8 +151,9 @@
           v-model.number="store.colorId"
           class="form-select"
           @change="handleColorChange"
+          :disabled="loading"
         >
-          <option value="">Seleccionar</option>
+          <option value="">{{ loading ? 'Cargando...' : 'Seleccionar' }}</option>
           <option v-for="color in colors || []" :key="color.id" :value="color.id">{{ color.name }}</option>
         </select>
       </div>
@@ -163,8 +166,9 @@
           v-model.number="store.serieId"
           class="form-select"
           @change="handleSerieChange"
+          :disabled="loading"
         >
-          <option value="">Seleccionar</option>
+          <option value="">{{ loading ? 'Cargando...' : 'Seleccionar' }}</option>
           <option v-for="serie in series || []" :key="serie.id" :value="serie.id">{{ serie.name }}</option>
         </select>
       </div>
@@ -177,8 +181,9 @@
           v-model.number="store.materialId"
           class="form-select"
           @change="handleMaterialChange"
+          :disabled="loading"
         >
-          <option value="">Seleccionar</option>
+          <option value="">{{ loading ? 'Cargando...' : 'Seleccionar' }}</option>
           <option v-for="material in materials || []" :key="material.id" :value="material.id">{{ material.name }}</option>
         </select>
       </div>
@@ -232,13 +237,15 @@
           v-model="store.description"
           rows="7"
           class="form-input resize-none"
-          :class="{ 'opacity-50 cursor-not-allowed': !isDescriptionsEnabled }"
-          placeholder="Complete los campos requeridos para habilitar"
+          placeholder="Escriba la descripción del producto"
           @blur="handleDescriptionBlur"
-          :disabled="isGenerating || !isDescriptionsEnabled"
+          :disabled="isGenerating"
         ></textarea>
-        <div v-if="!isDescriptionsEnabled" class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-          Complete todos los campos requeridos para habilitar las descripciones
+        <div v-if="!isDescriptionsEnabled" class="mt-2 text-sm text-amber-600 dark:text-amber-400 flex items-center gap-1">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+          </svg>
+          Complete todos los campos requeridos para habilitar la generación automática con IA
         </div>
         <div v-if="isGenerating" class="mt-2 text-sm text-blue-600 dark:text-blue-400 flex items-center gap-2">
           <span class="inline-block w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></span>
@@ -326,6 +333,10 @@
 .form-select {
   @apply bg-white border-2 border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full px-4 py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 transition;
 }
+
+.form-select:disabled {
+  @apply opacity-60 cursor-not-allowed bg-gray-100 dark:bg-gray-800;
+}
 </style>
 
 <script setup>
@@ -339,7 +350,7 @@ import productsService from '@/services/products.service'
 
 const store = useProductStore()
 const { formatNumber, handleNumberInput } = useNumberFormat()
-const { categories, brands, series, colors, materials, loadOptions } = useSelectOptions()
+const { categories, brands, series, colors, materials, loading, loadOptions } = useSelectOptions()
 const { isGenerating, generationError, generateDescriptions } = useDescriptionGenerator()
 
 // Obtener nombres de categorías y otras entidades
