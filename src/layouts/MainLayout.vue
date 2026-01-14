@@ -4,14 +4,14 @@ import Sidebar from '@/components/Sidebar.vue'
 </script>
 
 <template>
-  <div class="bg-gray-50 dark:bg-gray-900">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
     <!-- Main content area con sidebar -->
-    <div class="flex w-full">
-      <!-- Sidebar fixed a la izquierda -->
+    <div class="flex w-full min-h-screen">
+      <!-- Sidebar -->
       <Sidebar />
 
       <!-- Main content area -->
-      <main class="flex-1 overflow-y-auto" style="margin: 1vw;">
+      <main class="flex-1 p-6 lg:ml-64 overflow-y-auto">
         <slot />
       </main>
     </div>
@@ -19,10 +19,11 @@ import Sidebar from '@/components/Sidebar.vue'
 </template>
 
 <style scoped>
-/* Asegurar que el sidebar no afecta el layout en desktop */
-@media (min-width: 1024px) {
+/* Responsive adjustments */
+@media (max-width: 1023px) {
   main {
     margin-left: 0;
   }
 }
 </style>
+

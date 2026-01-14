@@ -29,12 +29,7 @@ const requiresLayout = computed(() => {
     <MainLayout v-if="requiresLayout">
       <RouterView />
     </MainLayout>
-    <RouterView v-else-if="isLoginPage || isAuthenticated" />
-    <div v-else class="flex items-center justify-center min-h-screen">
-      <div class="text-center">
-        <p class="text-gray-500">Redirigiendo...</p>
-      </div>
-    </div>
+    <RouterView v-else />
   </div>
 </template>
 

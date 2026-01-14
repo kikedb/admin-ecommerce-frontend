@@ -38,6 +38,7 @@ const menuItems = [
     id: 'products',
     label: 'Productos',
     icon: 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z',
+    route: 'ProductsList',
     hasSubmenu: true,
     submenu: [
       { label: 'Lista de Productos', route: 'ProductsList' },
@@ -50,6 +51,7 @@ const menuItems = [
     id: 'orders',
     label: 'Órdenes',
     icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+    route: 'OrdersList',
     hasSubmenu: true,
     submenu: [
       { label: 'Lista de Órdenes', route: 'OrdersList' },
@@ -67,7 +69,7 @@ const menuItems = [
     id: 'customers',
     label: 'Clientes',
     icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
-    route: 'Customers'
+    route: 'CustomersList'
   }
 ]
 </script>
@@ -135,18 +137,26 @@ const menuItems = [
             </RouterLink>
           </template>
           <template v-else>
-            <button
-              @click="toggleMenu(item.id)"
-              class="flex items-center p-2 w-full text-base font-medium text-gray-900 rounded-lg transition dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
-            >
-              <svg class="w-6 h-6 text-gray-400 transition group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path :d="item.icon"></path>
-              </svg>
-              <span class="flex-1 ml-3 text-left">{{ item.label }}</span>
-              <svg aria-hidden="true" class="w-6 h-6 transition" :class="{ 'rotate-180': expandedMenus[item.id] }" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-              </svg>
-            </button>
+            <div class="flex items-center justify-between">
+              <RouterLink
+                :to="{ name: item.route }"
+                class="flex items-center p-2 flex-1 text-base font-medium text-gray-900 rounded-lg transition dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+                :class="{ 'bg-blue-100 dark:bg-blue-900': isActive(item.route) }"
+              >
+                <svg class="w-6 h-6 text-gray-400 transition group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path :d="item.icon"></path>
+                </svg>
+                <span class="flex-1 ml-3 text-left">{{ item.label }}</span>
+              </RouterLink>
+              <button
+                @click.stop="toggleMenu(item.id)"
+                class="p-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <svg aria-hidden="true" class="w-5 h-5 transition" :class="{ 'rotate-180': expandedMenus[item.id] }" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                </svg>
+              </button>
+            </div>
             <ul v-show="expandedMenus[item.id]" class="py-2 space-y-1">
               <li v-for="subitem in item.submenu" :key="subitem.route">
                 <RouterLink
