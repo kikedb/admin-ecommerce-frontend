@@ -49,21 +49,27 @@ const menuItems = [
   },
   {
     id: 'orders',
-    label: 'Órdenes',
+    label: 'Pedidos',
     icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
     route: 'OrdersList',
     hasSubmenu: true,
     submenu: [
-      { label: 'Lista de Órdenes', route: 'OrdersList' },
-      { label: 'Órdenes Completadas', route: 'CompletedOrders' },
-      { label: 'Órdenes Pendientes', route: 'PendingOrders' }
+      { label: 'Lista de Pedidos', route: 'OrdersList' },
+      { label: 'Pedidos Completados', route: 'CompletedOrders' },
+      { label: 'Pedidos Pendientes', route: 'PendingOrders' }
     ]
   },
   {
     id: 'inventory',
     label: 'Inventario',
     icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
-    route: 'Inventory'
+    route: 'Inventory',
+    hasSubmenu: true,
+    submenu: [
+      { label: 'Inventario General', route: 'Inventory' },
+      { label: 'Órdenes de Compra', route: 'PurchaseOrdersList' },
+      { label: 'Transferencias', route: 'TransfersList' }
+    ]
   },
   {
     id: 'customers',
@@ -75,7 +81,7 @@ const menuItems = [
 </script>
 
 <template>
-  <aside id="sidebar" class="fixed top-20 left-0 z-40 w-64 h-screen pt-4 transition-transform -translate-x-full bg-white border-r border-gray-200 lg:translate-x-0 dark:bg-gray-800 dark:border-gray-700 lg:block lg:relative lg:top-0">
+  <aside id="sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen pt-4 transition-transform -translate-x-full bg-white border-r border-gray-200 lg:translate-x-0 dark:bg-gray-800 dark:border-gray-700">
     <div class="overflow-y-auto px-3 pb-4 h-full bg-white dark:bg-gray-800">
       <!-- User Profile Section -->
       <div class="mb-5 pb-5 border-b border-gray-200 dark:border-gray-700">

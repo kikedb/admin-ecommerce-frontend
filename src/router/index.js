@@ -9,6 +9,12 @@ import OrdersList from '@/pages/orders/OrdersList.vue'
 import OrderDetail from '@/pages/orders/OrderDetail.vue'
 import OrderReturn from '@/pages/orders/OrderReturn.vue'
 import InventoryPage from '@/pages/inventory/InventoryPage.vue'
+import PurchaseOrdersList from '@/pages/inventory/PurchaseOrdersList.vue'
+import PurchaseOrderCreate from '@/pages/inventory/PurchaseOrderCreate.vue'
+import PurchaseOrderDetail from '@/pages/inventory/PurchaseOrderDetail.vue'
+import TransfersList from '@/pages/inventory/TransfersList.vue'
+import TransferCreate from '@/pages/inventory/TransferCreate.vue'
+import TransferDetail from '@/pages/inventory/TransferDetail.vue'
 import CustomersList from '@/views/Customers/CustomersList.vue'
 import CustomerCreate from '@/views/Customers/CustomerCreate.vue'
 import CustomerEdit from '@/views/Customers/CustomerEdit.vue'
@@ -55,6 +61,42 @@ const routes = [
     path: '/admin/inventory',
     name: 'Inventory',
     component: InventoryPage,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/inventory/purchase-orders',
+    name: 'PurchaseOrdersList',
+    component: PurchaseOrdersList,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/inventory/purchase-orders/new',
+    name: 'PurchaseOrderCreate',
+    component: PurchaseOrderCreate,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/inventory/purchase-orders/:id',
+    name: 'PurchaseOrderDetail',
+    component: PurchaseOrderDetail,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/inventory/transfers',
+    name: 'TransfersList',
+    component: TransfersList,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/inventory/transfers/new',
+    name: 'TransferCreate',
+    component: TransferCreate,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/inventory/transfers/:id',
+    name: 'TransferDetail',
+    component: TransferDetail,
     meta: { requiresAuth: true }
   },
   {

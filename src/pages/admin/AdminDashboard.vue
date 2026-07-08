@@ -32,7 +32,7 @@ const router = useRouter()
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-gray-600 dark:text-gray-400 text-sm font-medium">Órdenes Pendientes</p>
+            <p class="text-gray-600 dark:text-gray-400 text-sm font-medium">Pedidos Pendientes</p>
             <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">-</p>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Conectar a API</p>
           </div>
@@ -104,7 +104,7 @@ const router = useRouter()
             </svg>
           </div>
           <div>
-            <p class="font-medium text-gray-900 dark:text-white">Órdenes</p>
+            <p class="font-medium text-gray-900 dark:text-white">Pedidos</p>
             <p class="text-xs text-gray-500 dark:text-gray-400">Ver pedidos</p>
           </div>
         </RouterLink>

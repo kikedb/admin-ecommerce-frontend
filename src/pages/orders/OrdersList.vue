@@ -40,6 +40,10 @@ const showExportModal = ref(false)
 const showMoreActions = ref(false)
 const notification = ref(null)
 
+const selectedOrdersObjects = computed(() => {
+  return orders.value.filter(o => selectedOrders.value.includes(o.id))
+})
+
 const filteredOrders = computed(() => {
   if (activeFilter.value === 'Archivados') {
     return orders.value.filter(o => o.status === 'archived')
@@ -328,17 +332,28 @@ const selectFilter = (filter) => {
 
   <!-- Vista exclusiva de impresión -->
   <div class="hidden print:block p-8 bg-white w-full text-black">
-    <div v-for="id in selectedOrders" :key="'print-'+id" class="break-after-page mb-8">
+    <div v-for="order in selectedOrdersObjects" :key="'print-'+order.id" class="break-after-page mb-8">
       <div class="border-b-2 border-black pb-4 mb-6">
-        <h1 class="text-4xl font-bold">Pedido #{{ id }}</h1>
-        <p class="text-gray-600 mt-2">Documento generado el {{ new Date().toLocaleDateString() }}</p>
+        <div class="flex justify-between items-start">
+          <div>
+            <h1 class="text-4xl font-bold">Pedido #{{ order.id }}</h1>
+            <p class="text-gray-600 mt-2">Documento generado el {{ new Date().toLocaleDateString() }}</p>
+          </div>
+          <div class="text-right uppercase">
+            <span v-if="order.paymentStatus === 'Reembolsado'" class="block text-red-600 font-bold text-xl mb-1">REEMBOLSADO</span>
+            <span v-else class="block font-bold text-xl mb-1">{{ order.paymentStatus }}</span>
+            
+            <span v-if="order.fulfillmentStatus === 'Devuelto'" class="block text-orange-600 font-bold text-lg">DEVUELTO</span>
+            <span v-else class="block font-bold text-lg text-gray-500">{{ order.fulfillmentStatus }}</span>
+          </div>
+        </div>
       </div>
       
       <div class="mb-6">
         <h2 class="text-lg font-bold mb-2">Detalles del pedido</h2>
-        <p><strong>Cliente:</strong> Consumidor final</p>
-        <p><strong>Canal de venta:</strong> Point of Sale</p>
-        <p><strong>Método de entrega:</strong> Retiro en tienda</p>
+        <p><strong>Cliente:</strong> {{ order.client }}</p>
+        <p><strong>Canal de venta:</strong> {{ order.canal }}</p>
+        <p><strong>Método de entrega:</strong> {{ order.deliveryMethod }}</p>
       </div>
 
       <table class="w-full border-collapse border border-gray-800 mb-6 text-sm">
@@ -352,10 +367,18 @@ const selectFilter = (filter) => {
         </thead>
         <tbody>
           <tr>
-            <td class="border border-gray-800 p-2">Producto simulado - Ejemplo</td>
-            <td class="border border-gray-800 p-2 text-center">1</td>
-            <td class="border border-gray-800 p-2 text-right">$12.990</td>
-            <td class="border border-gray-800 p-2 text-right">$12.990</td>
+            <td class="border border-gray-800 p-2">
+              Producto simulado
+              <span v-if="order.fulfillmentStatus === 'Devuelto'" class="ml-2 px-1 text-xs bg-orange-200 text-orange-800 rounded">Devuelto</span>
+            </td>
+            <td class="border border-gray-800 p-2 text-center">
+              <span :class="{'line-through': order.fulfillmentStatus === 'Devuelto'}">1</span>
+            </td>
+            <td class="border border-gray-800 p-2 text-right">{{ order.total }}</td>
+            <td class="border border-gray-800 p-2 text-right">
+              <span :class="{'line-through': order.paymentStatus === 'Reembolsado'}">{{ order.total }}</span>
+              <span v-if="order.paymentStatus === 'Reembolsado'" class="block font-bold text-red-600">$0</span>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -363,8 +386,9 @@ const selectFilter = (filter) => {
       <div class="flex justify-end">
         <div class="w-64">
           <div class="flex justify-between font-bold text-lg border-t-2 border-black pt-2">
-            <span>Total:</span>
-            <span>$12.990</span>
+            <span>Total neto:</span>
+            <span v-if="order.paymentStatus === 'Reembolsado'">$0</span>
+            <span v-else>{{ order.total }}</span>
           </div>
         </div>
       </div>
