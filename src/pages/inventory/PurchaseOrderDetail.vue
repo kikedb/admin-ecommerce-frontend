@@ -14,7 +14,10 @@ const goBack = () => {
 }
 
 const newComment = ref('')
+const showMoreActions = ref(false)
 
+import { useNotification } from '@/composables/useNotification'
+const notification = useNotification()
 </script>
 
 <template>
@@ -27,18 +30,24 @@ const newComment = ref('')
         </button>
         <h1 class="text-2xl font-bold text-gray-900">#{{ po.id }}</h1>
         <div class="flex gap-2">
-          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-            <span class="w-1.5 h-1.5 bg-gray-500 rounded-full mr-1.5"></span> {{ po.status }}
-          </span>
           <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
-            <span class="w-1.5 h-1.5 bg-gray-500 rounded-full mr-1.5"></span> Transferido
+            <span class="w-1.5 h-1.5 rounded-full mr-1.5" :class="po.status === 'Completado' ? 'bg-green-500' : (po.status === 'Borrador' ? 'bg-gray-400' : 'bg-blue-500')"></span> {{ po.status }}
+          </span>
+          <span v-if="po.linkedTransfer && po.status !== 'Borrador'" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+            <span class="w-1.5 h-1.5 bg-blue-500 rounded-full mr-1.5"></span> Transferencia Pendiente
           </span>
         </div>
       </div>
-      <div class="flex space-x-2">
-        <button class="px-3 py-2 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 font-medium text-sm transition shadow-sm">
-          Más acciones v
+      <div class="relative">
+        <button @click="showMoreActions = !showMoreActions" class="px-3 py-2 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 font-medium text-sm transition shadow-sm flex items-center gap-2">
+          Más acciones
+          <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
         </button>
+        <div v-if="showMoreActions" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10 py-1">
+          <a href="#" @click.prevent="notification.info('Duplicar orden no implementado'); showMoreActions = false" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Duplicar</a>
+          <a href="#" @click.prevent="notification.info('Archivar orden no implementado'); showMoreActions = false" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Archivar</a>
+          <a href="#" @click.prevent="notification.error('Cancelar orden no implementado'); showMoreActions = false" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50">Cancelar orden</a>
+        </div>
       </div>
     </div>
 
@@ -53,7 +62,7 @@ const newComment = ref('')
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
               {{ po.destination }}
             </div>
-            <button class="text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-100">Editar</button>
+            <button @click="notification.info('Edición de ruta de envío no implementada')" class="text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-100">Editar</button>
           </div>
           <table class="w-full text-left border-collapse">
             <thead>

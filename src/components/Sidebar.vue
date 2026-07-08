@@ -99,7 +99,7 @@ const menuItems = [
       <!-- Quick Actions -->
       <div class="mb-5 pb-5 border-b border-gray-200 dark:border-gray-700">
         <div class="grid grid-cols-3 gap-2">
-          <a href="#" class="rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-900 dark:hover:bg-blue-800 p-2.5 flex flex-col items-center justify-center group">
+          <a href="#" @click.prevent="showNotification('Página de Perfil en desarrollo')" class="rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-900 dark:hover:bg-blue-800 p-2.5 flex flex-col items-center justify-center group">
             <span class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-800 flex items-center justify-center mb-1 group-hover:bg-blue-200 dark:group-hover:bg-blue-700">
               <svg class="w-5 h-5 text-blue-600 dark:text-blue-300" fill="currentColor" viewBox="0 0 20 20">
                 <path clip-rule="evenodd" fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"></path>
@@ -107,7 +107,7 @@ const menuItems = [
             </span>
             <span class="text-xs text-blue-600 dark:text-blue-300 font-medium text-center">Perfil</span>
           </a>
-          <a href="#" class="rounded-lg bg-purple-50 hover:bg-purple-100 dark:bg-purple-900 dark:hover:bg-purple-800 p-2.5 flex flex-col items-center justify-center group">
+          <a href="#" @click.prevent="showNotification('Página de Pagos en desarrollo')" class="rounded-lg bg-purple-50 hover:bg-purple-100 dark:bg-purple-900 dark:hover:bg-purple-800 p-2.5 flex flex-col items-center justify-center group">
             <span class="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-800 flex items-center justify-center mb-1 group-hover:bg-purple-200 dark:group-hover:bg-purple-700">
               <svg class="w-5 h-5 text-purple-600 dark:text-purple-300" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"></path>
@@ -143,21 +143,16 @@ const menuItems = [
             </RouterLink>
           </template>
           <template v-else>
-            <div class="flex items-center justify-between">
-              <RouterLink
-                :to="{ name: item.route }"
-                class="flex items-center p-2 flex-1 text-base font-medium text-gray-900 rounded-lg transition dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+            <div class="flex items-center justify-between w-full">
+              <button
+                @click="toggleMenu(item.id); router.push({ name: item.route })"
+                class="flex items-center p-2 w-full text-base font-medium text-gray-900 rounded-lg transition dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
                 :class="{ 'bg-blue-100 dark:bg-blue-900': isActive(item.route) }"
               >
                 <svg class="w-6 h-6 text-gray-400 transition group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <path :d="item.icon"></path>
                 </svg>
                 <span class="flex-1 ml-3 text-left">{{ item.label }}</span>
-              </RouterLink>
-              <button
-                @click.stop="toggleMenu(item.id)"
-                class="p-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-              >
                 <svg aria-hidden="true" class="w-5 h-5 transition" :class="{ 'rotate-180': expandedMenus[item.id] }" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
                 </svg>

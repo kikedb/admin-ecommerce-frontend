@@ -73,7 +73,7 @@ export const inventoryItems = ref([
 export const purchaseOrders = ref([
   {
     id: 'PO2',
-    distributor: 'Bodega Colina',
+    distributor: 'Proveedor Genérico',
     destination: 'VENTA VITACURA',
     status: 'Pedido',
     linkedTransfer: '#T0109',

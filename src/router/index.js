@@ -6,6 +6,7 @@ import LoginPage from '@/pages/auth/LoginPage.vue'
 import AdminDashboard from '@/pages/admin/AdminDashboard.vue'
 import ProductsPage from '@/pages/products/ProductsPage.vue'
 import OrdersList from '@/pages/orders/OrdersList.vue'
+import OrderCreate from '@/pages/orders/OrderCreate.vue'
 import OrderDetail from '@/pages/orders/OrderDetail.vue'
 import OrderReturn from '@/pages/orders/OrderReturn.vue'
 import InventoryPage from '@/pages/inventory/InventoryPage.vue'
@@ -19,6 +20,7 @@ import CustomersList from '@/views/Customers/CustomersList.vue'
 import CustomerCreate from '@/views/Customers/CustomerCreate.vue'
 import CustomerEdit from '@/views/Customers/CustomerEdit.vue'
 import CustomerDetail from '@/views/Customers/CustomerDetail.vue'
+import ShippingPage from '@/pages/shipping/ShippingPage.vue'
 
 const routes = [
   {
@@ -43,6 +45,12 @@ const routes = [
     path: '/admin/orders',
     name: 'OrdersList',
     component: OrdersList,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/orders/new',
+    name: 'OrderCreate',
+    component: OrderCreate,
     meta: { requiresAuth: true }
   },
   {
@@ -139,6 +147,12 @@ const routes = [
     path: '/admin/colors',
     name: 'Colors',
     component: ProductsPage,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/shipping',
+    name: 'ShippingPage',
+    component: ShippingPage,
     meta: { requiresAuth: true }
   },
   {

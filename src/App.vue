@@ -27,9 +27,13 @@ const requiresLayout = computed(() => {
     
     <!-- Main Content -->
     <MainLayout v-if="requiresLayout">
-      <RouterView />
+      <router-view v-slot="{ Component, route }">
+        <keep-alive>
+          <component :is="Component" :key="route.fullPath" />
+        </keep-alive>
+      </router-view>
     </MainLayout>
-    <RouterView v-else />
+    <router-view v-else />
   </div>
 </template>
 

@@ -5,6 +5,8 @@ import { globalOrders } from '@/stores/mockOrders'
 
 const router = useRouter()
 
+const activeMetric = ref('Pedidos')
+
 const metrics = computed(() => {
   const all = globalOrders.value
   const active = all.filter(o => o.status === 'active')
@@ -19,17 +21,35 @@ const metrics = computed(() => {
   // Formatear devoluciones a moneda
   const devolucionesFormatted = devoluciones > 0 ? `$${devoluciones.toLocaleString('es-CL')}` : '$0'
 
+  const ventas = active.filter(o => o.paymentStatus === 'Pagado').reduce((acc, order) => {
+    const val = parseInt(order.total.replace(/[^0-9]/g, '')) || 0
+    return acc + val
+  }, 0)
+  const ventasFormatted = ventas > 0 ? `$${ventas.toLocaleString('es-CL')}` : '$0'
+
   const preparados = active.filter(o => o.fulfillmentStatus === 'Preparado' || o.fulfillmentStatus === 'Devuelto').length
+  const entregados = active.filter(o => o.fulfillmentStatus === 'Entregado').length
 
   return [
-    { label: 'Pedidos', value: active.length.toString(), hasGraph: true },
-    { label: 'Artículos pedidos', value: active.length.toString(), hasGraph: true }, // Simple aproximación
-    { label: 'Devoluciones', value: devolucionesFormatted, hasGraph: false },
-    { label: 'Pedidos preparados', value: preparados.toString(), hasGraph: true },
-    { label: 'Pedidos entregados', value: '0', hasGraph: true },
-    { label: 'Tiempo desde el pedido', value: '0 horas', hasGraph: false },
+    { label: 'Pedidos', value: active.length.toString(), hasGraph: true, filterable: true },
+    { label: 'Total Ventas', value: ventasFormatted, hasGraph: true, filterable: true },
+    { label: 'Devoluciones', value: devolucionesFormatted, hasGraph: false, filterable: true },
+    { label: 'Pedidos preparados', value: preparados.toString(), hasGraph: true, filterable: true },
+    { label: 'Pedidos entregados', value: entregados.toString(), hasGraph: true, filterable: true },
+    { label: 'Tiempo desde el pedido', value: '0 horas', hasGraph: false, filterable: false },
   ]
 })
+
+const toggleMetricFilter = (metric) => {
+  if (!metric.filterable) return
+  
+  if (activeMetric.value === metric.label) {
+    activeMetric.value = 'Pedidos' // Reset to default
+  } else {
+    activeMetric.value = metric.label
+  }
+  selectedOrders.value = [] // Reset selection on filter change
+}
 
 const orders = globalOrders
 
@@ -45,10 +65,25 @@ const selectedOrdersObjects = computed(() => {
 })
 
 const filteredOrders = computed(() => {
+  let result = orders.value
+
   if (activeFilter.value === 'Archivados') {
-    return orders.value.filter(o => o.status === 'archived')
+    return result.filter(o => o.status === 'archived')
   }
-  return orders.value.filter(o => o.status === 'active')
+  
+  result = result.filter(o => o.status === 'active')
+
+  if (activeMetric.value === 'Devoluciones') {
+    result = result.filter(o => o.paymentStatus === 'Reembolsado')
+  } else if (activeMetric.value === 'Total Ventas') {
+    result = result.filter(o => o.paymentStatus === 'Pagado')
+  } else if (activeMetric.value === 'Pedidos preparados') {
+    result = result.filter(o => o.fulfillmentStatus === 'Preparado')
+  } else if (activeMetric.value === 'Pedidos entregados') {
+    result = result.filter(o => o.fulfillmentStatus === 'Entregado')
+  }
+
+  return result
 })
 
 const selectAll = computed({
@@ -137,6 +172,25 @@ const selectFilter = (filter) => {
   showFilterDropdown.value = false
   selectedOrders.value = []
 }
+
+// Color helpers for statuses
+const getPaymentStatusClass = (status) => {
+  switch (status) {
+    case 'Pagado': return { bg: 'bg-green-100 text-green-800', dot: 'bg-green-500' }
+    case 'Pendiente': return { bg: 'bg-yellow-100 text-yellow-800', dot: 'bg-yellow-500' }
+    case 'Reembolsado': return { bg: 'bg-red-100 text-red-800', dot: 'bg-red-500' }
+    default: return { bg: 'bg-gray-100 text-gray-800', dot: 'bg-gray-500' }
+  }
+}
+
+const getFulfillmentStatusClass = (status) => {
+  switch (status) {
+    case 'Preparado': return { bg: 'bg-blue-100 text-blue-800', dot: 'bg-blue-500' }
+    case 'No preparado': return { bg: 'bg-yellow-100 text-yellow-800', dot: 'bg-yellow-500' }
+    case 'Devuelto': return { bg: 'bg-orange-100 text-orange-800', dot: 'bg-orange-500' }
+    default: return { bg: 'bg-gray-100 text-gray-800', dot: 'bg-gray-500' }
+  }
+}
 </script>
 
 <template>
@@ -208,13 +262,25 @@ const selectFilter = (filter) => {
           Hoy
         </div>
       </div>
-      <div v-for="(metric, index) in metrics" :key="index" class="p-4 min-w-[140px] flex-shrink-0">
-        <p class="text-xs text-gray-500 font-medium mb-1">{{ metric.label }}</p>
-        <div class="flex items-end">
-          <span class="text-lg font-bold text-gray-900 mr-2">{{ metric.value }}</span>
-          <span class="text-gray-400 text-xs mb-1">&minus;</span>
+      <!-- Metrics Row -->
+      <div class="flex overflow-x-auto divide-x divide-gray-200">
+        <div v-for="(metric, index) in metrics" :key="index" 
+             @click="toggleMetricFilter(metric)"
+             :class="[
+               'px-6 py-5 min-w-[200px] flex-shrink-0 transition-colors',
+               metric.filterable ? 'cursor-pointer hover:bg-blue-50/50' : '',
+               activeMetric === metric.label ? 'bg-blue-50 ring-inset ring-2 ring-blue-500 rounded-lg' : ''
+             ]">
+          <div class="text-sm font-medium text-gray-500 mb-1">{{ metric.label }}</div>
+          <div class="flex items-end">
+            <span class="text-2xl font-bold text-gray-900">{{ metric.value }}</span>
+            <span v-if="metric.hasGraph" class="ml-2 text-gray-300">
+              <svg width="40" height="15" viewBox="0 0 40 15" fill="none">
+                <path d="M0 10L10 5L20 12L30 3L40 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2 2"/>
+              </svg>
+            </span>
+          </div>
         </div>
-        <div v-if="metric.hasGraph" class="mt-2 h-4 border-b border-dashed border-blue-400 w-1/2"></div>
       </div>
     </div>
 
@@ -293,13 +359,13 @@ const selectFilter = (filter) => {
                 <span v-else>{{ order.total }}</span>
               </td>
               <td class="px-3 py-4 whitespace-nowrap text-sm">
-                <span :class="order.paymentStatus === 'Reembolsado' ? 'bg-red-100 text-red-800' : 'bg-gray-200 text-gray-800'" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium">
-                  <span :class="order.paymentStatus === 'Reembolsado' ? 'bg-red-500' : 'bg-gray-500'" class="w-1.5 h-1.5 rounded-full mr-1.5"></span> {{ order.paymentStatus }}
+                <span :class="getPaymentStatusClass(order.paymentStatus).bg" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium">
+                  <span :class="getPaymentStatusClass(order.paymentStatus).dot" class="w-1.5 h-1.5 rounded-full mr-1.5"></span> {{ order.paymentStatus }}
                 </span>
               </td>
               <td class="px-3 py-4 whitespace-nowrap text-sm">
-                <span :class="order.fulfillmentStatus === 'Devuelto' ? 'bg-orange-100 text-orange-800' : 'bg-gray-200 text-gray-800'" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium">
-                  <span :class="order.fulfillmentStatus === 'Devuelto' ? 'bg-orange-500' : 'bg-gray-500'" class="w-1.5 h-1.5 rounded-full mr-1.5"></span> {{ order.fulfillmentStatus }}
+                <span :class="getFulfillmentStatusClass(order.fulfillmentStatus).bg" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium">
+                  <span :class="getFulfillmentStatusClass(order.fulfillmentStatus).dot" class="w-1.5 h-1.5 rounded-full mr-1.5"></span> {{ order.fulfillmentStatus }}
                 </span>
               </td>
               <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500 w-24 whitespace-normal">
@@ -325,6 +391,50 @@ const selectFilter = (filter) => {
           <button class="p-1 border border-gray-300 rounded text-gray-400 hover:text-gray-500 disabled:opacity-50" disabled>
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
           </button>
+        </div>
+      </div>
+      
+      <!-- Nomenclatura / Leyenda de Estados -->
+      <div class="px-6 py-5 bg-gray-50 border-t border-gray-200 text-sm rounded-b-lg">
+        <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+          <svg class="w-4 h-4 mr-1.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          Nomenclatura de estados
+        </h4>
+        <div class="flex flex-col md:flex-row gap-8">
+          <div class="flex-1">
+            <p class="font-medium text-gray-700 mb-2 text-xs uppercase tracking-wider">Estados de pago</p>
+            <ul class="space-y-2">
+              <li class="flex items-start">
+                <span class="w-2 h-2 rounded-full bg-green-500 mt-1.5 mr-2 flex-shrink-0"></span> 
+                <span class="text-gray-600"><strong class="text-gray-900">Pagado:</strong> El pago ha sido procesado exitosamente.</span>
+              </li>
+              <li class="flex items-start">
+                <span class="w-2 h-2 rounded-full bg-yellow-500 mt-1.5 mr-2 flex-shrink-0"></span> 
+                <span class="text-gray-600"><strong class="text-gray-900">Pendiente:</strong> Pedido creado pero el pago aún no se ha verificado o capturado.</span>
+              </li>
+              <li class="flex items-start">
+                <span class="w-2 h-2 rounded-full bg-red-500 mt-1.5 mr-2 flex-shrink-0"></span> 
+                <span class="text-gray-600"><strong class="text-gray-900">Reembolsado:</strong> El dinero ha sido devuelto al cliente parcial o totalmente.</span>
+              </li>
+            </ul>
+          </div>
+          <div class="flex-1">
+            <p class="font-medium text-gray-700 mb-2 text-xs uppercase tracking-wider">Estados de preparación</p>
+            <ul class="space-y-2">
+              <li class="flex items-start">
+                <span class="w-2 h-2 rounded-full bg-blue-500 mt-1.5 mr-2 flex-shrink-0"></span> 
+                <span class="text-gray-600"><strong class="text-gray-900">Preparado:</strong> El pedido está empacado y listo para envío o entrega.</span>
+              </li>
+              <li class="flex items-start">
+                <span class="w-2 h-2 rounded-full bg-yellow-500 mt-1.5 mr-2 flex-shrink-0"></span> 
+                <span class="text-gray-600"><strong class="text-gray-900">No preparado:</strong> El pedido acaba de ingresar y aún no se arma en bodega.</span>
+              </li>
+              <li class="flex items-start">
+                <span class="w-2 h-2 rounded-full bg-orange-500 mt-1.5 mr-2 flex-shrink-0"></span> 
+                <span class="text-gray-600"><strong class="text-gray-900">Devuelto:</strong> Los artículos físicos regresaron a la bodega.</span>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
