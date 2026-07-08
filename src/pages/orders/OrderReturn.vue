@@ -1,6 +1,7 @@
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
 import { ref } from 'vue'
+import { globalOrders } from '@/stores/mockOrders'
 
 const route = useRoute()
 const router = useRouter()
@@ -48,6 +49,13 @@ const confirmAddProducts = () => {
 
 const submitReturn = () => {
   showNotification('Devolución creada exitosamente.')
+  
+  // Actualizar estado global
+  const order = globalOrders.value.find(o => o.id == orderId)
+  if (order) {
+    order.fulfillmentStatus = 'Devuelto'
+  }
+
   setTimeout(() => {
     router.push(`/admin/orders/${orderId}`)
   }, 1500)

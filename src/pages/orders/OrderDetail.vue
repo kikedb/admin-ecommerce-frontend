@@ -15,6 +15,7 @@ const showDuplicateModal = ref(false)
 const notification = ref(null)
 
 const isArchived = ref(true)
+const isWithinSernacWindow = ref(true)
 
 const goBack = () => {
   router.push('/admin/orders')
@@ -84,6 +85,15 @@ const confirmRefund = () => {
   showRefundModal.value = false
   isRefunded.value = true
   
+  // Actualizar estado global para que se refleje en la tabla principal
+  const order = globalOrders.value.find(o => o.id == orderId)
+  if (order) {
+    order.paymentStatus = 'Reembolsado'
+    if (restockItems.value) {
+      order.fulfillmentStatus = 'Devuelto'
+    }
+  }
+
   timelineEvents.value.unshift({
     id: Date.now(),
     text: `Se reembolsó ${refundAmount.value} $ CLP. Motivo: ${refundReason.value || 'No especificado'}. ${restockItems.value ? 'Se devolvió 1 artículo al inventario.' : ''}`,
@@ -271,7 +281,19 @@ const confirmDuplicate = () => {
 
       <div class="flex space-x-2 mt-4 md:mt-0 print:hidden">
         <button v-if="!isRefunded" @click="handleRefund" class="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded shadow-sm hover:bg-gray-50 text-sm font-medium">Reembolsar</button>
-        <button @click="goToReturn" class="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded shadow-sm hover:bg-gray-50 text-sm font-medium">Devolver</button>
+        
+        <div class="relative group">
+          <button @click="goToReturn" 
+                  :disabled="!isWithinSernacWindow"
+                  :class="{'opacity-50 cursor-not-allowed bg-gray-100': !isWithinSernacWindow}"
+                  class="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded shadow-sm hover:bg-gray-50 text-sm font-medium">
+            Devolver
+          </button>
+          <div v-if="!isWithinSernacWindow" class="absolute hidden group-hover:block w-48 bg-gray-800 text-white text-xs rounded p-2 -bottom-10 left-1/2 transform -translate-x-1/2 z-50">
+            Plazo de retracto (SERNAC) expirado.
+          </div>
+        </div>
+
         <button @click="handleEdit" class="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded shadow-sm hover:bg-gray-50 text-sm font-medium">Editar</button>
         
         <div class="relative">
@@ -283,6 +305,10 @@ const confirmDuplicate = () => {
           <!-- Dropdown menu -->
           <div v-if="showMoreActions" class="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
             <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
+              <a href="#" @click.prevent="isWithinSernacWindow = !isWithinSernacWindow" class="block px-4 py-2 text-xs text-blue-600 hover:bg-gray-100" role="menuitem">
+                [TEST] Alternar regla SERNAC
+              </a>
+              <div class="border-t border-gray-100"></div>
               <a href="#" @click.prevent="handleAction('Imprimir página del pedido')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" role="menuitem">Imprimir página del pedido</a>
               <div class="border-t border-gray-100"></div>
               <a href="#" @click.prevent="handleAction('Duplicar')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" role="menuitem">Duplicar</a>

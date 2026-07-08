@@ -5,14 +5,31 @@ import { globalOrders } from '@/stores/mockOrders'
 
 const router = useRouter()
 
-const metrics = ref([
-  { label: 'Pedidos', value: '2', hasGraph: true },
-  { label: 'Artículos pedidos', value: '2', hasGraph: true },
-  { label: 'Devoluciones', value: '$0', hasGraph: false },
-  { label: 'Pedidos preparados', value: '2', hasGraph: true },
-  { label: 'Pedidos entregados', value: '0', hasGraph: true },
-  { label: 'Tiempo desde el pedido', value: '0 horas', hasGraph: false },
-])
+const metrics = computed(() => {
+  const all = globalOrders.value
+  const active = all.filter(o => o.status === 'active')
+  
+  // Calcular devoluciones sumando los totales de pedidos reembolsados
+  const devoluciones = active.filter(o => o.paymentStatus === 'Reembolsado').reduce((acc, order) => {
+    // Extraer número de algo como "$12.990" -> 12990
+    const val = parseInt(order.total.replace(/[^0-9]/g, '')) || 0
+    return acc + val
+  }, 0)
+
+  // Formatear devoluciones a moneda
+  const devolucionesFormatted = devoluciones > 0 ? `$${devoluciones.toLocaleString('es-CL')}` : '$0'
+
+  const preparados = active.filter(o => o.fulfillmentStatus === 'Preparado' || o.fulfillmentStatus === 'Devuelto').length
+
+  return [
+    { label: 'Pedidos', value: active.length.toString(), hasGraph: true },
+    { label: 'Artículos pedidos', value: active.length.toString(), hasGraph: true }, // Simple aproximación
+    { label: 'Devoluciones', value: devolucionesFormatted, hasGraph: false },
+    { label: 'Pedidos preparados', value: preparados.toString(), hasGraph: true },
+    { label: 'Pedidos entregados', value: '0', hasGraph: true },
+    { label: 'Tiempo desde el pedido', value: '0 horas', hasGraph: false },
+  ]
+})
 
 const orders = globalOrders
 
@@ -264,18 +281,30 @@ const selectFilter = (filter) => {
               <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{{ order.client }}</td>
               <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500"></td>
               <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500 w-24 whitespace-normal">{{ order.canal }}</td>
-              <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-900">{{ order.total }}</td>
+              <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                <div v-if="order.paymentStatus === 'Reembolsado'">
+                  <span class="line-through text-gray-400">{{ order.total }}</span>
+                  <span class="block font-medium">$0</span>
+                </div>
+                <span v-else>{{ order.total }}</span>
+              </td>
               <td class="px-3 py-4 whitespace-nowrap text-sm">
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-800">
-                  <span class="w-1.5 h-1.5 bg-gray-500 rounded-full mr-1.5"></span> {{ order.paymentStatus }}
+                <span :class="order.paymentStatus === 'Reembolsado' ? 'bg-red-100 text-red-800' : 'bg-gray-200 text-gray-800'" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium">
+                  <span :class="order.paymentStatus === 'Reembolsado' ? 'bg-red-500' : 'bg-gray-500'" class="w-1.5 h-1.5 rounded-full mr-1.5"></span> {{ order.paymentStatus }}
                 </span>
               </td>
               <td class="px-3 py-4 whitespace-nowrap text-sm">
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-800">
-                  <span class="w-1.5 h-1.5 bg-gray-500 rounded-full mr-1.5"></span> {{ order.fulfillmentStatus }}
+                <span :class="order.fulfillmentStatus === 'Devuelto' ? 'bg-orange-100 text-orange-800' : 'bg-gray-200 text-gray-800'" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium">
+                  <span :class="order.fulfillmentStatus === 'Devuelto' ? 'bg-orange-500' : 'bg-gray-500'" class="w-1.5 h-1.5 rounded-full mr-1.5"></span> {{ order.fulfillmentStatus }}
                 </span>
               </td>
-              <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500 w-24 whitespace-normal">{{ order.items }}</td>
+              <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500 w-24 whitespace-normal">
+                <div v-if="order.fulfillmentStatus === 'Devuelto'">
+                  <span class="line-through text-gray-400">{{ order.items }}</span>
+                  <span class="block text-orange-600 font-medium">0 artículos</span>
+                </div>
+                <span v-else>{{ order.items }}</span>
+              </td>
               <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500 w-24 whitespace-normal">{{ order.deliveryMethod }}</td>
             </tr>
           </tbody>
