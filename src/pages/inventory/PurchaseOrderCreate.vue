@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { locations, inventoryItems, purchaseOrders } from '@/stores/mockInventory'
+import { locations, inventoryItems, purchaseOrders, transfers } from '@/stores/mockInventory'
 import { useNotification } from '@/composables/useNotification'
 
 const router = useRouter()
@@ -154,13 +154,34 @@ const submitOrder = () => {
 
   const distName = locations.value.find(l => l.id === distributor.value)?.name || 'Distribuidor'
   const destName = locations.value.find(l => l.id === destination.value)?.name || 'Destino'
+  const newPoId = referenceNumber.value.replace('#', '');
+  const newTransferId = 'TR-' + Date.now().toString().slice(-6);
+
+  // Generate linked transfer automatically
+  transfers.value.unshift({
+    id: newTransferId,
+    origin: distName,
+    destination: destName,
+    status: 'Pendiente',
+    expectedArrival: selectedDate.toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' }),
+    itemsCount: validItems.reduce((sum, item) => sum + item.orderQuantity, 0),
+    receivedCount: 0,
+    items: validItems.map(i => ({
+      sku: i.sku,
+      product: i.product,
+      selectedVariant: i.selectedVariant,
+      transferQuantity: i.orderQuantity,
+      received: 0,
+      rejected: 0
+    }))
+  });
 
   purchaseOrders.value.unshift({
-    id: referenceNumber.value.replace('#', ''),
+    id: newPoId,
     distributor: distName,
     destination: destName,
     status: 'Pedido',
-    linkedTransfer: '--',
+    linkedTransfer: '#' + newTransferId,
     received: '0 de ' + validItems.reduce((sum, item) => sum + item.orderQuantity, 0),
     total: '$' + validItems.reduce((sum, item) => sum + (item.orderCost * item.orderQuantity), 0),
     expectedArrival: selectedDate.toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' }),
@@ -172,11 +193,11 @@ const submitOrder = () => {
       total: '$' + (i.orderCost * i.orderQuantity)
     })),
     timeline: [
-      { date: new Date().toLocaleDateString('es-CL', { day: '2-digit', month: 'long', year: 'numeric' }), time: new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }), user: 'Usuario actual', action: 'ha creado la orden de compra.' }
+      { date: new Date().toLocaleDateString('es-CL', { day: '2-digit', month: 'long', year: 'numeric' }), time: new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }), user: 'Usuario actual', action: 'ha creado la orden de compra y generado la transferencia ' + '#' + newTransferId + '.' }
     ]
   })
 
-  notification.success('Orden de compra guardada exitosamente.');
+  notification.success('Orden de compra guardada y transferencia vinculada creada exitosamente.');
   router.push('/admin/inventory/purchase-orders');
 }
 </script>

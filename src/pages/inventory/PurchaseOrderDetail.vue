@@ -138,13 +138,14 @@ const newComment = ref('')
         <!-- Transferencia Vinculada -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h3 class="font-semibold text-gray-900 mb-4">Transferencia vinculada</h3>
-          <div class="flex items-center gap-2 text-sm text-gray-900 hover:text-blue-600 cursor-pointer">
-            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-            {{ po.linkedTransfer }}
+          <div v-if="po.linkedTransfer && po.linkedTransfer !== '--'" @click="router.push('/admin/inventory/transfers/' + po.linkedTransfer.replace('#', ''))" class="flex items-center gap-2 text-sm text-gray-900 hover:text-blue-600 cursor-pointer group transition-colors">
+            <svg class="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+            <span class="font-medium underline decoration-transparent group-hover:decoration-blue-600 underline-offset-2">{{ po.linkedTransfer }}</span>
             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 ml-auto">
-              <span class="w-1.5 h-1.5 bg-gray-500 rounded-full mr-1.5"></span> Transferido
+              <span class="w-1.5 h-1.5 bg-gray-500 rounded-full mr-1.5"></span> Pendiente
             </span>
           </div>
+          <div v-else class="text-sm text-gray-500 italic">No hay transferencias vinculadas.</div>
         </div>
 
         <!-- Detalles -->
