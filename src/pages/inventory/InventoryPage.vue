@@ -1,6 +1,9 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { inventoryItems, locations } from '@/stores/mockInventory'
+import { useNotification } from '@/composables/useNotification'
+
+const notification = useNotification()
 
 const activeFilter = ref('Todos')
 const searchQuery = ref('')
@@ -69,12 +72,12 @@ const getAvailabilityStatus = (disponible) => {
         <h1 class="text-2xl font-bold text-gray-900">Inventario General</h1>
         <p class="text-sm text-gray-500 mt-1">Gestión del universo total de productos a través de múltiples bodegas, tiendas físicas y APIs de Marketplaces.</p>
       </div>
-      <div class="flex space-x-3">
-        <button @click="alert('Exportando inventario a CSV...')" class="px-4 py-2 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 font-medium text-sm transition shadow-sm">
+      <div class="flex gap-2">
+        <button @click="notification.info('Exportando inventario a CSV...')" class="px-4 py-2 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 font-medium text-sm transition shadow-sm">
           Exportar
         </button>
-        <button @click="alert('Abriendo ventana de importación de inventario...')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm transition shadow-sm">
-          Importar Inventario
+        <button @click="notification.info('Abriendo ventana de importación de inventario...')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm transition shadow-sm">
+          Importar inventario
         </button>
       </div>
     </div>
@@ -115,7 +118,7 @@ const getAvailabilityStatus = (disponible) => {
         </div>
         
         <div>
-          <button @click="alert('Abriendo panel de filtros avanzados...')" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Más filtros</button>
+          <button @click="notification.info('Abriendo panel de filtros avanzados...')" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Más filtros</button>
         </div>
       </div>
 
@@ -251,8 +254,8 @@ const getAvailabilityStatus = (disponible) => {
               </div>
 
               <!-- Actions -->
-              <div class="mt-8 pt-6 border-t border-gray-200">
-                <button @click="alert('Abriendo modal para ajustar cantidades...')" class="w-full flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              <div class="mt-6">
+                <button @click="notification.info('Abriendo modal para ajustar cantidades...')" class="w-full flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                   Ajustar cantidades
                 </button>
               </div>

@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { transfers } from '@/stores/mockInventory'
+import { useNotification } from '@/composables/useNotification'
 
 const route = useRoute()
 const router = useRouter()
@@ -9,12 +10,22 @@ const tId = route.params.id
 
 const transfer = computed(() => transfers.value.find(t => t.id === tId))
 
+const notification = useNotification()
+
 const goBack = () => {
   router.push('/admin/inventory/transfers')
 }
 
-const receiveItems = () => {
-  alert('Recepción de artículos registrada')
+const receiveTransfer = () => {
+  transfer.value.status = 'Completado'
+  let receivedCount = 0;
+  if (transfer.value.items) {
+    transfer.value.items.forEach(item => {
+      receivedCount += (item.received || 0);
+    });
+  }
+  transfer.value.receivedCount = receivedCount;
+  notification.success('Recepción de artículos registrada')
 }
 
 </script>
@@ -38,7 +49,7 @@ const receiveItems = () => {
         <button class="px-3 py-2 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 font-medium text-sm transition shadow-sm">
           Más acciones v
         </button>
-        <button @click="receiveItems" class="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 font-medium text-sm transition shadow-sm">
+        <button @click="receiveTransfer" class="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 font-medium text-sm transition shadow-sm">
           Recibir inventario
         </button>
       </div>
@@ -66,7 +77,27 @@ const receiveItems = () => {
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
-              <tr class="hover:bg-gray-50 transition">
+              <template v-if="transfer.items && transfer.items.length > 0">
+                <tr v-for="(item, index) in transfer.items" :key="index" class="hover:bg-gray-50 transition">
+                  <td class="py-4 px-4 text-sm text-gray-900">
+                    {{ item.product }}
+                    <p class="text-xs text-gray-500">{{ item.sku }}</p>
+                    <p v-if="item.selectedVariant" class="text-xs font-medium text-gray-700 bg-gray-100 inline-block px-2 py-1 rounded mt-1">{{ item.selectedVariant }}</p>
+                  </td>
+                  <td class="py-4 px-4 text-sm text-gray-900 text-right">
+                    <input v-if="transfer.status !== 'Completado'" type="number" min="0" v-model.number="item.received" class="w-20 border border-gray-300 rounded-md text-right p-1 text-sm focus:ring-blue-500 focus:border-blue-500">
+                    <span v-else>{{ item.received }}</span>
+                  </td>
+                  <td class="py-4 px-4 text-sm text-gray-900 text-right">
+                    <input v-if="transfer.status !== 'Completado'" type="number" min="0" v-model.number="item.rejected" class="w-20 border border-gray-300 rounded-md text-right p-1 text-sm text-red-600 focus:ring-red-500 focus:border-red-500">
+                    <span v-else class="text-red-600">{{ item.rejected }}</span>
+                  </td>
+                  <td class="py-4 px-4 text-sm text-gray-900 text-right font-medium">
+                    {{ item.transferQuantity }}
+                  </td>
+                </tr>
+              </template>
+              <tr v-else class="hover:bg-gray-50 transition">
                 <td class="py-4 px-4 text-sm text-gray-500">Múltiples artículos en tránsito...</td>
                 <td class="py-4 px-4 text-sm text-gray-900 text-right">{{ transfer.receivedCount }}</td>
                 <td class="py-4 px-4 text-sm text-gray-500 text-right">0</td>

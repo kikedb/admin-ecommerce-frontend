@@ -2,8 +2,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { locations, inventoryItems, purchaseOrders } from '@/stores/mockInventory'
+import { useNotification } from '@/composables/useNotification'
 
 const router = useRouter()
+const notification = useNotification()
 const distributor = ref('')
 const destination = ref('')
 const referenceNumber = ref('')
@@ -13,6 +15,7 @@ const currency = ref('CLP $')
 const expectedArrival = ref('')
 const creationDate = new Date().toLocaleDateString('es-CL')
 const tags = ref('')
+const orderType = ref('Estándar')
 
 onMounted(() => {
   referenceNumber.value = '#PO-00' + (purchaseOrders.value.length + 1)
@@ -107,53 +110,73 @@ const totalCost = computed(() => {
 
 const goBack = () => {
   if (distributor.value || destination.value || selectedItems.value.length > 0) {
-    const confirmDraft = confirm('Tienes información sin guardar. ¿Deseas guardar esta orden como borrador antes de salir?');
-    if (confirmDraft) {
-      alert('Orden guardada como borrador exitosamente.');
-    }
+    notification.info('Orden guardada como borrador.')
   }
   router.push('/admin/inventory/purchase-orders')
 }
 
 const submitOrder = () => {
   if (!distributor.value) {
-    alert('Por favor, selecciona un distribuidor u origen.');
+    notification.error('Por favor, selecciona un distribuidor u origen.');
     return;
   }
   if (!destination.value) {
-    alert('Por favor, selecciona un destino.');
+    notification.error('Por favor, selecciona un destino.');
     return;
   }
 
   const validItems = selectedItems.value.filter(i => i.orderQuantity > 0);
   if (validItems.length === 0) {
-    alert('Por favor, ingresa una cantidad mayor a 0 para al menos un producto.');
+    notification.error('Por favor, ingresa una cantidad mayor a 0 para al menos un producto.');
     return;
   }
 
   if (!expectedArrival.value) {
-    alert('Por favor, ingresa la fecha prevista de llegada.');
+    notification.error('Por favor, ingresa la fecha prevista de llegada.');
     return;
   }
 
-  const arrivalDate = new Date(expectedArrival.value + 'T00:00:00');
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const selectedDate = new Date(expectedArrival.value + 'T00:00:00');
+  
+  if (selectedDate < today) {
+    notification.error('La fecha de llegada no puede ser en el pasado.');
+    return;
+  }
   
   const maxDate = new Date(today);
-  maxDate.setDate(maxDate.getDate() + 5);
-
-  if (arrivalDate < today) {
-    alert('La fecha de llegada no puede ser en el pasado.');
+  maxDate.setDate(today.getDate() + 5);
+  if (selectedDate > maxDate) {
+    notification.error('La fecha de llegada no puede superar los 5 días desde hoy.');
     return;
   }
 
-  if (arrivalDate > maxDate) {
-    alert('La fecha de llegada no puede superar los 5 días desde hoy.');
-    return;
-  }
+  const distName = locations.value.find(l => l.id === distributor.value)?.name || 'Distribuidor'
+  const destName = locations.value.find(l => l.id === destination.value)?.name || 'Destino'
 
-  alert('Orden de compra guardada exitosamente.');
+  purchaseOrders.value.unshift({
+    id: referenceNumber.value.replace('#', ''),
+    distributor: distName,
+    destination: destName,
+    status: 'Pedido',
+    linkedTransfer: '--',
+    received: '0 de ' + validItems.reduce((sum, item) => sum + item.orderQuantity, 0),
+    total: '$' + validItems.reduce((sum, item) => sum + (item.orderCost * item.orderQuantity), 0),
+    expectedArrival: selectedDate.toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' }),
+    items: validItems.map(i => ({
+      sku: i.sku,
+      name: i.product,
+      quantity: i.orderQuantity,
+      cost: '$' + i.orderCost,
+      total: '$' + (i.orderCost * i.orderQuantity)
+    })),
+    timeline: [
+      { date: new Date().toLocaleDateString('es-CL', { day: '2-digit', month: 'long', year: 'numeric' }), time: new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }), user: 'Usuario actual', action: 'ha creado la orden de compra.' }
+    ]
+  })
+
+  notification.success('Orden de compra guardada exitosamente.');
   router.push('/admin/inventory/purchase-orders');
 }
 </script>

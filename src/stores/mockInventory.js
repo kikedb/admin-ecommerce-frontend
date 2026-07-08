@@ -115,7 +115,10 @@ export const transfers = ref([
     status: 'Completado',
     expectedArrival: '15 jun 2023',
     itemsCount: 5,
-    receivedCount: 5
+    receivedCount: 5,
+    items: [
+      { sku: 'EAGC0107', product: 'Balancín de oveja con asiento', transferQuantity: 5, received: 5, rejected: 0 }
+    ]
   },
   {
     id: 'T0109',
@@ -124,6 +127,10 @@ export const transfers = ref([
     status: 'Transferido',
     expectedArrival: '11 may 2023',
     itemsCount: 58,
-    receivedCount: 58
+    receivedCount: 0,
+    items: [
+      { sku: 'BANW082', product: 'Angel con flores', transferQuantity: 40, received: 0, rejected: 0 },
+      { sku: 'CHKP0004', product: 'Cierva Clarita Ballerina', transferQuantity: 18, received: 0, rejected: 0 }
+    ]
   }
 ])

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { locations, inventoryItems, transfers } from '@/stores/mockInventory'
 
@@ -7,9 +7,23 @@ const router = useRouter()
 const origin = ref('')
 const destination = ref('')
 const referenceNumber = ref('')
-const transferType = ref('Reabastecimiento')
+const transferType = ref('Reabastecimiento normal')
 const expectedArrival = ref('')
 const creationDate = new Date().toLocaleDateString('es-CL')
+
+import { useNotification } from '@/composables/useNotification'
+const notification = useNotification()
+
+const availableDestinations = computed(() => {
+  if (!origin.value) return locations.value
+  return locations.value.filter(loc => loc.id !== origin.value)
+})
+
+watch(origin, (newVal) => {
+  if (newVal && newVal === destination.value) {
+    destination.value = ''
+  }
+})
 
 onMounted(() => {
   referenceNumber.value = '#TR-00' + (transfers.value.length + 1)
@@ -97,49 +111,66 @@ const totalItems = computed(() => {
 
 const goBack = () => {
   if (origin.value || destination.value || selectedItems.value.length > 0) {
-    const confirmDraft = confirm('Tienes información sin guardar. ¿Deseas guardar esta transferencia como borrador antes de salir?');
-    if (confirmDraft) {
-      alert('Transferencia guardada como borrador exitosamente.');
-    }
+    notification.info('Transferencia guardada como borrador.')
   }
   router.push('/admin/inventory/transfers')
 }
 
 const submitTransfer = () => {
   if (!origin.value || !destination.value) {
-    alert('Por favor, selecciona un origen y un destino.');
+    notification.error('Por favor, selecciona un origen y un destino.')
     return;
   }
   
   const validItems = selectedItems.value.filter(i => i.transferQuantity > 0);
   if (validItems.length === 0) {
-    alert('Por favor, ingresa una cantidad mayor a 0 para al menos un producto.');
+    notification.error('Por favor, ingresa una cantidad mayor a 0 para al menos un producto.')
     return;
   }
   if (!expectedArrival.value) {
-    alert('Por favor, ingresa la fecha estimada de llegada.');
+    notification.error('Por favor, ingresa la fecha estimada de llegada.')
     return;
   }
-  
-  const arrivalDate = new Date(expectedArrival.value + 'T00:00:00');
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const selectedDate = new Date(expectedArrival.value + 'T00:00:00');
+  
+  if (selectedDate < today) {
+    notification.error('La fecha estimada no puede ser en el pasado.')
+    return;
+  }
   
   const maxDate = new Date(today);
-  maxDate.setDate(maxDate.getDate() + 5);
-
-  if (arrivalDate < today) {
-    alert('La fecha estimada no puede ser en el pasado.');
+  maxDate.setDate(today.getDate() + 5);
+  if (selectedDate > maxDate) {
+    notification.error('La fecha estimada de llegada no puede superar los 5 días desde hoy.')
     return;
   }
 
-  if (arrivalDate > maxDate) {
-    alert('La fecha estimada de llegada no puede superar los 5 días desde hoy.');
-    return;
-  }
+  const originName = locations.value.find(l => l.id === origin.value)?.name || 'Origen'
+  const destName = locations.value.find(l => l.id === destination.value)?.name || 'Destino'
   
-  alert(`Transferencia de tipo "${transferType.value}" creada exitosamente.`);
-  router.push('/admin/inventory/transfers');
+  transfers.value.unshift({
+    id: referenceNumber.value.replace('#', ''),
+    origin: originName,
+    destination: destName,
+    status: 'Pendiente',
+    expectedArrival: selectedDate.toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' }),
+    itemsCount: validItems.reduce((sum, item) => sum + item.transferQuantity, 0),
+    receivedCount: 0,
+    items: validItems.map(i => ({
+      sku: i.sku,
+      product: i.product,
+      selectedVariant: i.selectedVariant,
+      transferQuantity: i.transferQuantity,
+      received: 0,
+      rejected: 0
+    }))
+  })
+
+  notification.success(`Transferencia de tipo "${transferType.value}" creada exitosamente.`)
+  router.push('/admin/inventory/transfers')
 }
 </script>
 
@@ -177,9 +208,9 @@ const submitTransfer = () => {
             </div>
             <div class="flex-1">
               <label class="block text-sm font-medium text-gray-700 mb-1">Destino</label>
-              <select v-model="destination" class="w-full border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50">
-                <option value="">Seleccionar destino</option>
-                <option v-for="loc in locations" :key="'dest_' + loc.id" :value="loc.id">{{ loc.name }}</option>
+              <select v-model="destination" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                <option value="">Seleccione destino...</option>
+                <option v-for="loc in availableDestinations" :key="loc.id" :value="loc.id">{{ loc.name }}</option>
               </select>
             </div>
           </div>
