@@ -5,7 +5,9 @@ import { useAuthStore } from '@/stores/auth'
 import LoginPage from '@/pages/auth/LoginPage.vue'
 import AdminDashboard from '@/pages/admin/AdminDashboard.vue'
 import ProductsPage from '@/pages/products/ProductsPage.vue'
-import OrdersPage from '@/pages/orders/OrdersPage.vue'
+import OrdersList from '@/pages/orders/OrdersList.vue'
+import OrderDetail from '@/pages/orders/OrderDetail.vue'
+import OrderReturn from '@/pages/orders/OrderReturn.vue'
 import InventoryPage from '@/pages/inventory/InventoryPage.vue'
 import CustomersList from '@/views/Customers/CustomersList.vue'
 import CustomerCreate from '@/views/Customers/CustomerCreate.vue'
@@ -34,7 +36,19 @@ const routes = [
   {
     path: '/admin/orders',
     name: 'OrdersList',
-    component: OrdersPage,
+    component: OrdersList,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/orders/:id',
+    name: 'OrderDetail',
+    component: OrderDetail,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/orders/:id/return',
+    name: 'OrderReturn',
+    component: OrderReturn,
     meta: { requiresAuth: true }
   },
   {
@@ -88,14 +102,20 @@ const routes = [
   {
     path: '/admin/orders/completed',
     name: 'CompletedOrders',
-    component: OrdersPage,
+    component: OrdersList,
     meta: { requiresAuth: true }
   },
   {
     path: '/admin/orders/pending',
     name: 'PendingOrders',
-    component: OrdersPage,
+    component: OrdersList,
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/estado-pedido/:id',
+    name: 'PublicOrderStatus',
+    component: () => import('@/pages/orders/PublicOrderStatus.vue'),
+    meta: { requiresAuth: false }
   },
   {
     path: '/',
