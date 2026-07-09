@@ -21,6 +21,9 @@ import CustomerCreate from '@/views/Customers/CustomerCreate.vue'
 import CustomerEdit from '@/views/Customers/CustomerEdit.vue'
 import CustomerDetail from '@/views/Customers/CustomerDetail.vue'
 import ShippingPage from '@/pages/shipping/ShippingPage.vue'
+import SettingsLayout from '@/layouts/SettingsLayout.vue'
+import GeneralSettings from '@/pages/settings/GeneralSettings.vue'
+import SettingsPlaceholder from '@/pages/settings/SettingsPlaceholder.vue'
 
 const routes = [
   {
@@ -151,9 +154,40 @@ const routes = [
   },
   {
     path: '/admin/shipping',
-    name: 'ShippingPage',
+    name: 'Shipping',
     component: ShippingPage,
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/settings',
+    component: SettingsLayout,
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: '',
+        redirect: '/admin/settings/general'
+      },
+      {
+        path: 'general',
+        name: 'SettingsGeneral',
+        component: GeneralSettings
+      },
+      {
+        path: 'placeholder',
+        name: 'SettingsPlaceholder',
+        component: SettingsPlaceholder
+      },
+      {
+        path: 'taxes',
+        name: 'SettingsTaxes',
+        component: () => import('@/pages/settings/TaxesSettings.vue')
+      },
+      {
+        path: 'notifications',
+        name: 'SettingsNotifications',
+        component: () => import('@/pages/settings/NotificationsSettings.vue')
+      }
+    ]
   },
   {
     path: '/admin/orders/completed',
@@ -172,6 +206,42 @@ const routes = [
     name: 'PublicOrderStatus',
     component: () => import('@/pages/orders/PublicOrderStatus.vue'),
     meta: { requiresAuth: false }
+  },
+  {
+    path: '/admin/marketing/campaigns',
+    name: 'MarketingCampaigns',
+    component: () => import('@/pages/marketing/MarketingCampaigns.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/marketing/campaigns/new',
+    name: 'MarketingCampaignCreate',
+    component: () => import('@/pages/marketing/MarketingCampaignCreate.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/marketing/campaigns/:id',
+    name: 'MarketingCampaignDashboard',
+    component: () => import('@/pages/marketing/MarketingCampaignDashboard.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/marketing/automations',
+    name: 'MarketingAutomations',
+    component: () => import('@/pages/marketing/MarketingAutomations.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/marketing/automations/edit',
+    name: 'MarketingAutomationEdit',
+    component: () => import('@/pages/marketing/MarketingAutomationEdit.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/marketing/templates',
+    name: 'MarketingTemplates',
+    component: () => import('@/pages/marketing/MarketingTemplates.vue'),
+    meta: { requiresAuth: true }
   },
   {
     path: '/',

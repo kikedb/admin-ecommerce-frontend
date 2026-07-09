@@ -12,8 +12,9 @@ const { notifications, removeNotification } = useNotification()
 
 const isAuthenticated = computed(() => authStore.isAuthenticated)
 const isLoginPage = computed(() => router.currentRoute.value.name === 'Login')
+const isSettingsRoute = computed(() => router.currentRoute.value.path.startsWith('/admin/settings'))
 const requiresLayout = computed(() => {
-  return isAuthenticated.value && !isLoginPage.value
+  return isAuthenticated.value && !isLoginPage.value && !isSettingsRoute.value
 })
 </script>
 
