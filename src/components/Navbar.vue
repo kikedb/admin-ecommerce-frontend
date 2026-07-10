@@ -2,9 +2,11 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useLayoutStore } from '@/stores/layout'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const layoutStore = useLayoutStore()
 
 const notificationDropdownOpen = ref(false)
 const searchQuery = ref('')
@@ -139,8 +141,7 @@ const notifications = [
         <!-- Mobile menu button -->
         <button
           type="button"
-          data-drawer-target="sidebar"
-          data-drawer-toggle="sidebar"
+          @click="layoutStore.toggleSidebar()"
           class="inline-flex items-center p-2 text-sm text-gray-500 rounded-lg lg:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
         >
           <svg class="w-6 h-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">

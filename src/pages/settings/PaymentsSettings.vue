@@ -123,7 +123,7 @@ onMounted(() => {
     <!-- Header -->
     <div class="flex items-center gap-2 mb-6">
       <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
-      <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Pagos</h1>
+      <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Pasarelas de pago</h1>
     </div>
 
     <!-- Proveedores de pago -->
@@ -174,6 +174,32 @@ onMounted(() => {
         <button @click="showProviderModal = true" class="w-full flex items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl text-gray-600 dark:text-gray-400 hover:text-blue-600 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
           <span class="text-sm font-medium">Agregar proveedor de pago</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Proveedores externos (Third-party providers) -->
+    <section class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mt-6">
+      <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-white">Proveedores externos</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Habilita otros proveedores que procesen tarjetas de crédito para que los clientes tengan más opciones.</p>
+      </div>
+      <div class="p-6">
+        <button @click="showProviderModal = true" class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
+          Elegir proveedor externo
+        </button>
+      </div>
+    </section>
+
+    <!-- Métodos de pago alternativos -->
+    <section class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mt-6">
+      <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-white">Métodos de pago alternativos</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Acepta formas de pago alternativas como criptomonedas o billeteras locales.</p>
+      </div>
+      <div class="p-6">
+        <button class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
+          Elegir método de pago alternativo
         </button>
       </div>
     </section>

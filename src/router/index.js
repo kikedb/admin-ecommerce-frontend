@@ -24,6 +24,12 @@ import ShippingPage from '@/pages/shipping/ShippingPage.vue'
 import SettingsLayout from '@/layouts/SettingsLayout.vue'
 import GeneralSettings from '@/pages/settings/GeneralSettings.vue'
 import SettingsPlaceholder from '@/pages/settings/SettingsPlaceholder.vue'
+import ProfileEdit from '@/pages/settings/ProfileEdit.vue'
+import SupportPage from '@/pages/settings/SupportPage.vue'
+import SettingsBilling from '@/pages/settings/SettingsBilling.vue'
+import SettingsCheckout from '@/pages/settings/SettingsCheckout.vue'
+import SettingsPrivacy from '@/pages/settings/SettingsPrivacy.vue'
+import SettingsCustomData from '@/pages/settings/SettingsCustomData.vue'
 
 const routes = [
   {
@@ -168,9 +174,34 @@ const routes = [
         component: GeneralSettings
       },
       {
-        path: 'placeholder',
-        name: 'SettingsPlaceholder',
-        component: SettingsPlaceholder
+        path: 'checkout',
+        name: 'SettingsCheckout',
+        component: SettingsCheckout
+      },
+      {
+        path: 'privacy',
+        name: 'SettingsPrivacy',
+        component: SettingsPrivacy
+      },
+      {
+        path: 'custom-data',
+        name: 'SettingsCustomData',
+        component: SettingsCustomData
+      },
+      {
+        path: 'billing',
+        name: 'SettingsBilling',
+        component: SettingsBilling
+      },
+      {
+        path: 'profile',
+        name: 'SettingsProfile',
+        component: ProfileEdit
+      },
+      {
+        path: 'support',
+        name: 'SettingsSupport',
+        component: SupportPage
       },
       {
         path: 'taxes',
