@@ -2,6 +2,7 @@
 import { ref, nextTick, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { globalOrders } from '@/stores/mockOrders'
+import { useNotification } from '@/composables/useNotification'
 
 const route = useRoute()
 const router = useRouter()
@@ -12,7 +13,7 @@ const showRefundModal = ref(false)
 const showEditModal = ref(false)
 const showDeleteModal = ref(false)
 const showDuplicateModal = ref(false)
-const notification = ref(null)
+const { success: showNotification } = useNotification()
 
 const isArchived = ref(true)
 const isWithinSernacWindow = ref(true)
@@ -23,13 +24,6 @@ const goBack = () => {
 
 const goToReturn = () => {
   router.push(`/admin/orders/${orderId}/return`)
-}
-
-const showNotification = (message) => {
-  notification.value = message
-  setTimeout(() => {
-    notification.value = null
-  }, 3000)
 }
 
 const handleAction = async (actionName) => {
@@ -146,12 +140,6 @@ const confirmDuplicate = () => {
 <template>
   <div class="p-6 bg-gray-50 min-h-screen text-gray-800 relative">
     
-    <!-- Notification Toast -->
-    <div v-if="notification" class="fixed top-4 right-4 z-50 bg-gray-800 text-white px-4 py-3 rounded shadow-lg flex items-center space-x-3 transition-opacity duration-300">
-      <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-      <span>{{ notification }}</span>
-    </div>
-
     <!-- Refund Modal -->
     <div v-if="showRefundModal" class="fixed inset-0 z-40 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4">
       <div class="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useMarketingStore } from '@/stores/mockMarketing'
 
@@ -10,26 +10,9 @@ const marketingStore = useMarketingStore()
 const campaignId = computed(() => route.params.id)
 const campaign = ref(null)
 
-onMounted(() => {
-  // En un entorno real, haríamos fetch con el ID
-  // Aquí buscamos en el store mock o mostramos datos genéricos
-  const found = marketingStore.campaigns.find(c => c.id === parseInt(campaignId.value) || c.id === campaignId.value)
-  if (found) {
-    campaign.value = found
-  } else {
-    // Fallback if accessed directly with a mock ID
-    campaign.value = {
-      id: campaignId.value,
-      subject: 'Campaña ' + campaignId.value,
-      channel: 'Correo electrónico',
-      status: 'Enviado',
-      sent: 'hace 2 días'
-    }
-  }
-})
-
 const showPreview = ref(false)
 const hasData = ref(false)
+const dateRange = ref('Últimos 30 días')
 
 const mockStats = ref({
   sessions: '0',
@@ -41,6 +24,46 @@ const mockStats = ref({
 const chart1Heights = ref([0,0,0,0,0,0,0])
 const chart2Heights = ref([0,0,0,0,0,0,0])
 
+const simulateData = () => {
+  hasData.value = true
+  // Generamos un random para que cada vez que cambies filtro o cargues campaña se vea distinto
+  const mult = dateRange.value === 'Últimos 7 días' ? 1 : dateRange.value === 'Este mes' ? 3 : dateRange.value === 'Últimos 30 días' ? 4 : 10
+  
+  mockStats.value = {
+    sessions: (Math.floor(Math.random() * 500) * mult).toLocaleString(),
+    sales: campaign.value?.sales !== '-' ? campaign.value?.sales : '$' + (Math.floor(Math.random() * 1000) * mult).toLocaleString(),
+    orders: Math.floor(Math.random() * 50 * mult).toString(),
+    aov: '$' + Math.floor(Math.random() * 150 + 50).toString()
+  }
+  
+  chart1Heights.value = Array(7).fill(0).map(() => Math.floor(Math.random() * 70) + 30)
+  chart2Heights.value = Array(7).fill(0).map(() => Math.floor(Math.random() * 70) + 30)
+}
+
+watch(dateRange, () => {
+  if (hasData.value) {
+    simulateData()
+  }
+})
+
+onMounted(() => {
+  const found = marketingStore.campaigns.find(c => c.id === parseInt(campaignId.value) || c.id === campaignId.value)
+  if (found) {
+    campaign.value = found
+    if (found.status === 'Enviado' || found.status === 'Activo') {
+       simulateData()
+    }
+  } else {
+    campaign.value = {
+      id: campaignId.value,
+      subject: 'Campaña ' + campaignId.value,
+      channel: 'Correo electrónico',
+      status: 'Borrador',
+      sent: '-'
+    }
+  }
+})
+
 const showToast = ref(false)
 const toastMessage = ref('')
 
@@ -48,20 +71,6 @@ const showNotification = (message) => {
   toastMessage.value = message
   showToast.value = true
   setTimeout(() => showToast.value = false, 3000)
-}
-
-const simulateData = () => {
-  hasData.value = true
-  mockStats.value = {
-    sessions: '1,245',
-    sales: '$4,520',
-    orders: '42',
-    aov: '$107'
-  }
-  
-  // Generar alturas aleatorias para los gráficos (en %)
-  chart1Heights.value = Array(7).fill(0).map(() => Math.floor(Math.random() * 70) + 30)
-  chart2Heights.value = Array(7).fill(0).map(() => Math.floor(Math.random() * 70) + 30)
 }
 
 const handleUnsubscribe = () => {
@@ -78,13 +87,13 @@ const goBack = () => {
   <div class="space-y-6 pb-20">
     
     <!-- Top Bar -->
-    <div class="bg-[#1a1a1a] text-white px-4 py-3 flex items-center justify-between shadow-sm sticky top-0 z-10 rounded-b-xl -mt-6 -mx-6 mb-6">
+    <div class="bg-[#1a1a1a] text-white px-4 py-3 flex items-center justify-between shadow-sm sticky top-0 z-10 rounded-b-xl">
       <div class="flex items-center gap-3">
-        <button @click="goBack" class="p-1.5 hover:bg-gray-800 rounded-md transition text-gray-300 hover:text-white">
+        <RouterLink to="/admin/marketing/campaigns" class="p-1.5 hover:bg-gray-800 rounded-md transition text-gray-300 hover:text-white">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-        </button>
+        </RouterLink>
         <div class="flex items-center gap-2 text-sm font-medium">
-          <span class="text-gray-400">Campañas</span>
+          <RouterLink to="/admin/marketing/campaigns" class="text-gray-400 hover:text-white transition">Campañas</RouterLink>
           <span class="text-gray-600">/</span>
           <span>Resultados</span>
         </div>
@@ -105,12 +114,26 @@ const goBack = () => {
       <!-- Left Column: Metrics -->
       <div class="flex-1 space-y-6">
         
-        <!-- Header Info -->
-        <div>
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ campaign?.subject || campaign?.name || 'Campaña' }}</h1>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Enviado el {{ campaign?.sent || '15 de Mayo, 2024' }} • Canal: {{ campaign?.channel }}
-          </p>
+        <!-- Actions & Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ campaign?.subject || 'Nueva colección de invierno' }}</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-2">
+              <span class="inline-block w-2 h-2 rounded-full bg-blue-500"></span>
+              Enviado {{ campaign?.date || 'el 15 de enero de 2026' }}
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button @click="showPreview = true" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+              Vista previa
+            </button>
+            <select v-model="dateRange" class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer">
+              <option>Últimos 7 días</option>
+              <option>Últimos 30 días</option>
+              <option>Este mes</option>
+              <option>Este año</option>
+            </select>
+          </div>
         </div>
 
         <!-- KPIs -->
@@ -172,7 +195,6 @@ const goBack = () => {
         <!-- Read Only Rules -->
         <div class="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">Configuración de Envío</h3>
-          
           <div class="space-y-4">
             <div>
               <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Público objetivo</p>

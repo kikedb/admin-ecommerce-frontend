@@ -26,10 +26,12 @@ import { useRoute, useRouter } from 'vue-router'
 import { useCustomerStore } from '@/stores/customer'
 import customersService from '@/services/customers.service'
 import CustomerForm from '@/components/Customers/CustomerForm.vue'
+import { useNotification } from '@/composables/useNotification'
 
 const route = useRoute()
 const router = useRouter()
 const store = useCustomerStore()
+const notification = useNotification()
 const loading = ref(false)
 const loadingData = ref(true)
 
@@ -41,7 +43,7 @@ onMounted(async () => {
     store.loadCustomer(response.data.data)
   } catch (error) {
     console.error('Error loading customer:', error)
-    alert('Error al cargar el cliente')
+    notification.error('Error al cargar el cliente')
     router.push('/customers')
   } finally {
     loadingData.value = false
@@ -53,11 +55,11 @@ async function handleUpdate(data) {
   try {
     const customerId = route.params.id
     await customersService.updateCustomer(customerId, data)
-    alert('Cliente actualizado exitosamente')
+    notification.success('Cliente actualizado exitosamente')
     router.push('/customers')
   } catch (error) {
     console.error('Error updating customer:', error)
-    alert('Error al actualizar el cliente: ' + (error.response?.data?.message || error.message))
+    notification.error('Error al actualizar el cliente: ' + (error.response?.data?.message || error.message))
   } finally {
     loading.value = false
   }

@@ -182,6 +182,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import customerAddressesService from '@/services/customerAddresses.service'
+import { useNotification } from '@/composables/useNotification'
 
 const props = defineProps({
   customerId: {
@@ -197,6 +198,7 @@ const showModal = ref(false)
 const editingAddress = ref(null)
 const saving = ref(false)
 const error = ref('')
+const notification = useNotification()
 
 const form = ref({
   address_line_1: '',
@@ -262,8 +264,10 @@ async function saveAddress() {
   try {
     if (editingAddress.value) {
       await customerAddressesService.updateAddress(props.customerId, editingAddress.value.id, form.value)
+      notification.success('Dirección actualizada')
     } else {
       await customerAddressesService.createAddress(props.customerId, form.value)
+      notification.success('Dirección creada')
     }
     
     await loadAddresses()
@@ -280,9 +284,10 @@ async function setDefault(addressId) {
   try {
     await customerAddressesService.setDefaultAddress(props.customerId, addressId)
     await loadAddresses()
+    notification.success('Dirección predeterminada actualizada')
     emit('updated')
   } catch (err) {
-    alert('Error al marcar como predeterminada')
+    notification.error('Error al marcar como predeterminada')
   }
 }
 
@@ -292,9 +297,10 @@ async function confirmDelete(addressId) {
   try {
     await customerAddressesService.deleteAddress(props.customerId, addressId)
     await loadAddresses()
+    notification.success('Dirección eliminada')
     emit('updated')
   } catch (err) {
-    alert('Error al eliminar la dirección')
+    notification.error('Error al eliminar la dirección')
   }
 }
 </script>

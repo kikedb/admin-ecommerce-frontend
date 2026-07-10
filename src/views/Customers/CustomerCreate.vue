@@ -21,9 +21,11 @@ import { useRouter } from 'vue-router'
 import { useCustomerStore } from '@/stores/customer'
 import customersService from '@/services/customers.service'
 import CustomerForm from '@/components/Customers/CustomerForm.vue'
+import { useNotification } from '@/composables/useNotification'
 
 const router = useRouter()
 const store = useCustomerStore()
+const notification = useNotification()
 const loading = ref(false)
 
 onMounted(() => {
@@ -34,11 +36,11 @@ async function handleCreate(data) {
   loading.value = true
   try {
     await customersService.createCustomer(data)
-    alert('Cliente creado exitosamente')
+    notification.success('Cliente creado exitosamente')
     router.push('/customers')
   } catch (error) {
     console.error('Error creating customer:', error)
-    alert('Error al crear el cliente: ' + (error.response?.data?.message || error.message))
+    notification.error('Error al crear el cliente: ' + (error.response?.data?.message || error.message))
   } finally {
     loading.value = false
   }

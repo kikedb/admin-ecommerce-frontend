@@ -170,8 +170,10 @@ import { ref, computed, onMounted } from 'vue'
 import customersService from '@/services/customers.service'
 import { useRouter } from 'vue-router'
 import CustomerImportExport from '@/components/customers/CustomerImportExport.vue'
+import { useNotification } from '@/composables/useNotification'
 
 const router = useRouter()
+const notification = useNotification()
 const loading = ref(false)
 const customers = ref([])
 const search = ref('')
@@ -279,10 +281,11 @@ async function deleteCustomer(id) {
   
   try {
     await customersService.deleteCustomer(id)
+    notification.success('Cliente eliminado correctamente')
     loadCustomers(pagination.value.current_page)
   } catch (error) {
     console.error('Error deleting customer:', error)
-    alert('Error al eliminar el cliente')
+    notification.error('Error al eliminar el cliente')
   }
 }
 

@@ -2,8 +2,10 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { globalOrders } from '@/stores/mockOrders'
+import { useNotification } from '@/composables/useNotification'
 
 const router = useRouter()
+const { success: showNotification, info: showInfoNotification } = useNotification()
 
 const activeMetric = ref('Pedidos')
 
@@ -58,7 +60,6 @@ const showFilterDropdown = ref(false)
 const selectedOrders = ref([])
 const showExportModal = ref(false)
 const showMoreActions = ref(false)
-const notification = ref(null)
 
 const selectedOrdersObjects = computed(() => {
   return orders.value.filter(o => selectedOrders.value.includes(o.id))
@@ -106,11 +107,24 @@ const toggleOrderSelection = (id) => {
   }
 }
 
-const showNotification = (message) => {
-  notification.value = message
-  setTimeout(() => {
-    notification.value = null
-  }, 3000)
+const handleBatchPrepare = () => {
+  orders.value.forEach(o => {
+    if (selectedOrders.value.includes(o.id) && o.fulfillmentStatus !== 'Preparado') {
+      o.fulfillmentStatus = 'Preparado'
+    }
+  })
+  showNotification(`${selectedOrders.value.length} pedidos marcados como preparados.`)
+  selectedOrders.value = []
+}
+
+const handleBatchCapture = () => {
+  orders.value.forEach(o => {
+    if (selectedOrders.value.includes(o.id) && o.paymentStatus !== 'Pagado') {
+      o.paymentStatus = 'Pagado'
+    }
+  })
+  showNotification(`Pagos capturados para ${selectedOrders.value.length} pedidos.`)
+  selectedOrders.value = []
 }
 
 const goToOrderDetail = (id) => {
@@ -197,12 +211,6 @@ const getFulfillmentStatusClass = (status) => {
   <div class="min-h-screen bg-gray-50">
     <!-- Vista Normal (se oculta al imprimir) -->
     <div class="p-6 text-gray-800 relative print:hidden">
-      
-      <!-- Notification Toast -->
-      <div v-if="notification" class="fixed top-4 right-4 z-50 bg-gray-800 text-white px-4 py-3 rounded shadow-lg flex items-center space-x-3 transition-opacity duration-300">
-        <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-        <span>{{ notification }}</span>
-      </div>
 
       <!-- Export Modal -->
       <div v-if="showExportModal" class="fixed inset-0 z-40 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4">
@@ -315,8 +323,8 @@ const getFulfillmentStatusClass = (status) => {
       <!-- Action Bar (when selected) -->
       <div v-if="selectedOrders.length > 0" class="bg-gray-50 border-b border-gray-200 px-4 py-2 flex items-center text-sm">
         <span class="font-medium text-gray-700 mr-4">{{ selectedOrders.length }} seleccionados</span>
-        <button class="mr-3 px-3 py-1 bg-white border border-gray-300 rounded hover:bg-gray-50 text-gray-700">Preparar pedidos</button>
-        <button class="mr-3 px-3 py-1 bg-white border border-gray-300 rounded hover:bg-gray-50 text-gray-700">Capturar pagos</button>
+        <button @click="handleBatchPrepare" class="mr-3 px-3 py-1 bg-white border border-gray-300 rounded hover:bg-gray-50 text-gray-700">Preparar pedidos</button>
+        <button @click="handleBatchCapture" class="mr-3 px-3 py-1 bg-white border border-gray-300 rounded hover:bg-gray-50 text-gray-700">Capturar pagos</button>
       </div>
 
       <!-- Table -->
@@ -384,11 +392,11 @@ const getFulfillmentStatusClass = (status) => {
       <!-- Pagination -->
       <div class="px-4 py-3 border-t border-gray-200 flex items-center justify-center">
         <div class="flex items-center space-x-2">
-          <button class="p-1 border border-gray-300 rounded text-gray-400 hover:text-gray-500 disabled:opacity-50" disabled>
+          <button @click="showInfoNotification('Estás en la primera página.')" class="p-1 border border-gray-300 rounded text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
           </button>
-          <span class="text-sm text-gray-700">1-50</span>
-          <button class="p-1 border border-gray-300 rounded text-gray-400 hover:text-gray-500 disabled:opacity-50" disabled>
+          <span class="text-sm text-gray-700 font-medium px-2">1 - 50</span>
+          <button @click="showInfoNotification('No hay más páginas disponibles.')" class="p-1 border border-gray-300 rounded text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
           </button>
         </div>

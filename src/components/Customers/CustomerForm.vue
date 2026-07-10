@@ -39,12 +39,14 @@
       <!-- B2C: Persona Natural -->
       <div v-if="store.isB2C" class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium mb-2">Nombre *</label>
-          <input v-model="store.firstName" type="text" class="form-input" required />
+          <label class="block text-sm font-medium mb-2" :class="{'text-red-600': errors.firstName}">Nombre *</label>
+          <input v-model="store.firstName" type="text" :class="['form-input', {'border-red-500 focus:ring-red-500': errors.firstName}]" @input="clearError('firstName')" required />
+          <p v-if="errors.firstName" class="text-xs text-red-500 mt-1">{{ errors.firstName }}</p>
         </div>
         <div>
-          <label class="block text-sm font-medium mb-2">Apellido *</label>
-          <input v-model="store.lastName" type="text" class="form-input" required />
+          <label class="block text-sm font-medium mb-2" :class="{'text-red-600': errors.lastName}">Apellido *</label>
+          <input v-model="store.lastName" type="text" :class="['form-input', {'border-red-500 focus:ring-red-500': errors.lastName}]" @input="clearError('lastName')" required />
+          <p v-if="errors.lastName" class="text-xs text-red-500 mt-1">{{ errors.lastName }}</p>
         </div>
         <div>
           <label class="block text-sm font-medium mb-2">RUT/Documento *</label>
@@ -59,8 +61,9 @@
       <!-- B2B: Empresa -->
       <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium mb-2">Razón Social *</label>
-          <input v-model="store.businessName" type="text" class="form-input" required />
+          <label class="block text-sm font-medium mb-2" :class="{'text-red-600': errors.businessName}">Razón Social *</label>
+          <input v-model="store.businessName" type="text" :class="['form-input', {'border-red-500 focus:ring-red-500': errors.businessName}]" @input="clearError('businessName')" required />
+          <p v-if="errors.businessName" class="text-xs text-red-500 mt-1">{{ errors.businessName }}</p>
         </div>
         <div>
           <label class="block text-sm font-medium mb-2">Nombre Comercial</label>
@@ -79,8 +82,9 @@
       <!-- Contacto (ambos) -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
         <div class="md:col-span-2">
-          <label class="block text-sm font-medium mb-2">Email *</label>
-          <input v-model="store.email" type="email" class="form-input" required />
+          <label class="block text-sm font-medium mb-2" :class="{'text-red-600': errors.email}">Email *</label>
+          <input v-model="store.email" type="email" :class="['form-input', {'border-red-500 focus:ring-red-500': errors.email}]" @input="clearError('email')" required />
+          <p v-if="errors.email" class="text-xs text-red-500 mt-1">{{ errors.email }}</p>
         </div>
         <div>
           <label class="block text-sm font-medium mb-2">Teléfono</label>
@@ -232,6 +236,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useCustomerStore } from '@/stores/customer'
+import { useNotification } from '@/composables/useNotification'
 
 const props = defineProps({
   loading: Boolean
@@ -240,7 +245,9 @@ const props = defineProps({
 const emit = defineEmits(['submit', 'cancel'])
 
 const store = useCustomerStore()
+const notification = useNotification()
 const activeTab = ref('basic')
+const errors = ref({})
 
 const tabs = [
   { id: 'basic', label: 'Información Básica' },
@@ -249,18 +256,41 @@ const tabs = [
   { id: 'notes', label: 'Notas' }
 ]
 
+function clearError(field) {
+  if (errors.value[field]) {
+    delete errors.value[field]
+  }
+}
+
 function handleSubmit() {
+  errors.value = {}
+  let hasErrors = false
+
   // Validación básica
-  if (store.isB2C && (!store.firstName || !store.lastName)) {
-    alert('Por favor complete nombre y apellido')
-    return
+  if (store.isB2C) {
+    if (!store.firstName) {
+      errors.value.firstName = 'El nombre es requerido'
+      hasErrors = true
+    }
+    if (!store.lastName) {
+      errors.value.lastName = 'El apellido es requerido'
+      hasErrors = true
+    }
   }
+  
   if (store.isB2B && !store.businessName) {
-    alert('Por favor complete la razón social')
-    return
+    errors.value.businessName = 'La razón social es requerida'
+    hasErrors = true
   }
+  
   if (!store.email) {
-    alert('El email es requerido')
+    errors.value.email = 'El email es requerido'
+    hasErrors = true
+  }
+
+  if (hasErrors) {
+    activeTab.value = 'basic'
+    notification.warning('Por favor completa los campos requeridos')
     return
   }
 

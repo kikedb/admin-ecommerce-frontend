@@ -119,10 +119,10 @@ const notifications = [
             </div>
             <ul class="py-1" role="none">
               <li>
-                <a href="#" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem">Mi perfil</a>
+                <RouterLink :to="{ name: 'SettingsUsers' }" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem">Mi perfil</RouterLink>
               </li>
               <li>
-                <a href="#" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem">Configuración</a>
+                <RouterLink :to="{ name: 'SettingsGeneral' }" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem">Configuración</RouterLink>
               </li>
             </ul>
             <div class="py-1" role="none">

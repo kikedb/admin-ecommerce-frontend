@@ -182,6 +182,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import customerContactsService from '@/services/customerContacts.service'
+import { useNotification } from '@/composables/useNotification'
 
 const props = defineProps({
   customerId: {
@@ -197,6 +198,7 @@ const showModal = ref(false)
 const editingContact = ref(null)
 const saving = ref(false)
 const error = ref('')
+const notification = useNotification()
 
 const form = ref({
   contact_name: '',
@@ -260,8 +262,10 @@ async function saveContact() {
   try {
     if (editingContact.value) {
       await customerContactsService.updateContact(props.customerId, editingContact.value.id, form.value)
+      notification.success('Contacto actualizado')
     } else {
       await customerContactsService.createContact(props.customerId, form.value)
+      notification.success('Contacto creado')
     }
     
     await loadContacts()
@@ -278,9 +282,10 @@ async function setPrimary(contactId) {
   try {
     await customerContactsService.setPrimaryContact(props.customerId, contactId)
     await loadContacts()
+    notification.success('Contacto marcado como principal')
     emit('updated')
   } catch (err) {
-    alert('Error al marcar como principal')
+    notification.error('Error al marcar como principal')
   }
 }
 
@@ -290,9 +295,10 @@ async function confirmDelete(contactId) {
   try {
     await customerContactsService.deleteContact(props.customerId, contactId)
     await loadContacts()
+    notification.success('Contacto eliminado')
     emit('updated')
   } catch (err) {
-    alert('Error al eliminar el contacto')
+    notification.error('Error al eliminar el contacto')
   }
 }
 </script>

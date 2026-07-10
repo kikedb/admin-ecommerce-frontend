@@ -137,27 +137,22 @@ const routes = [
   {
     path: '/admin/categories',
     name: 'Categories',
-    component: ProductsPage,
+    component: () => import('@/pages/products/CategoriesList.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/admin/brands',
     name: 'Brands',
-    component: ProductsPage,
+    component: () => import('@/pages/products/BrandsList.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/admin/colors',
     name: 'Colors',
-    component: ProductsPage,
+    component: () => import('@/pages/products/ColorsList.vue'),
     meta: { requiresAuth: true }
   },
-  {
-    path: '/admin/shipping',
-    name: 'Shipping',
-    component: ShippingPage,
-    meta: { requiresAuth: true }
-  },
+
   {
     path: '/admin/settings',
     component: SettingsLayout,
@@ -186,6 +181,76 @@ const routes = [
         path: 'notifications',
         name: 'SettingsNotifications',
         component: () => import('@/pages/settings/NotificationsSettings.vue')
+      },
+      {
+        path: 'integrations',
+        name: 'SettingsIntegrations',
+        component: () => import('@/pages/settings/IntegrationsSettings.vue')
+      },
+      {
+        path: 'shipping',
+        name: 'SettingsShipping',
+        component: () => import('@/pages/settings/ShippingSettings.vue')
+      },
+      {
+        path: 'shipping/profiles/:id',
+        name: 'ShippingProfileEdit',
+        component: () => import('@/pages/settings/ShippingProfileEdit.vue')
+      },
+      {
+        path: 'users',
+        name: 'SettingsUsers',
+        component: () => import('@/pages/settings/UsersSettings.vue')
+      },
+      {
+        path: 'payments',
+        name: 'SettingsPayments',
+        component: () => import('@/pages/settings/PaymentsSettings.vue')
+      },
+      {
+        path: 'customer-accounts',
+        name: 'SettingsCustomerAccounts',
+        component: () => import('@/pages/settings/CustomerAccountsSettings.vue')
+      },
+      {
+        path: 'locations',
+        name: 'SettingsLocations',
+        component: () => import('@/pages/settings/LocationsSettings.vue')
+      },
+      {
+        path: 'sales-channels',
+        name: 'SettingsSalesChannels',
+        component: () => import('@/pages/settings/SalesChannelsSettings.vue')
+      },
+      {
+        path: 'domains',
+        name: 'SettingsDomains',
+        component: () => import('@/pages/settings/DomainsSettings.vue')
+      },
+      {
+        path: 'customer-events',
+        name: 'SettingsCustomerEvents',
+        component: () => import('@/pages/settings/CustomerEventsSettings.vue')
+      },
+      {
+        path: 'customer-events/:id',
+        name: 'PixelEdit',
+        component: () => import('@/pages/settings/PixelEdit.vue')
+      },
+      {
+        path: 'languages',
+        name: 'SettingsLanguages',
+        component: () => import('@/pages/settings/LanguagesSettings.vue')
+      },
+      {
+        path: 'markets',
+        name: 'SettingsMarkets',
+        component: () => import('@/pages/settings/MarketsSettings.vue')
+      },
+      {
+        path: 'locations/:id',
+        name: 'SettingsLocationsEdit',
+        component: () => import('@/pages/settings/LocationsEdit.vue')
       }
     ]
   },

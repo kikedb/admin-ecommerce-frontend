@@ -219,6 +219,7 @@ import { useCustomerStore } from '@/stores/customer'
 import customersService from '@/services/customers.service'
 import CustomerAddresses from '@/components/customers/CustomerAddresses.vue'
 import CustomerContacts from '@/components/customers/CustomerContacts.vue'
+import { useNotification } from '@/composables/useNotification'
 
 // Components
 const InfoField = {
@@ -234,6 +235,7 @@ const InfoField = {
 const router = useRouter()
 const route = useRoute()
 const customerStore = useCustomerStore()
+const notification = useNotification()
 
 const customer = ref(null)
 const loading = ref(true)
@@ -309,8 +311,9 @@ async function suspendCustomer() {
   try {
     await customersService.suspendCustomer(customer.value.id)
     customer.value.status = 'suspended'
+    notification.success('Cliente suspendido')
   } catch (error) {
-    alert('Error al suspender cliente')
+    notification.error('Error al suspender cliente')
     console.error(error)
   }
 }
@@ -319,8 +322,9 @@ async function activateCustomer() {
   try {
     await customersService.activateCustomer(customer.value.id)
     customer.value.status = 'active'
+    notification.success('Cliente activado')
   } catch (error) {
-    alert('Error al activar cliente')
+    notification.error('Error al activar cliente')
     console.error(error)
   }
 }
