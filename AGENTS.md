@@ -14,3 +14,13 @@ DO NOT use ports reserved by other systems:
 ## Credentials
 - Admin Email: `admin@admin.com`
 - Admin Password: `admin123`
+
+## File & Path Naming Rules (MANDATORY - Cross-Platform Compatibility)
+
+NEVER create, rename, or save files/directories with:
+- Trailing or leading spaces in folder or file names (e.g. `Folder /` or `File.txt `).
+- Trailing dots before file extensions or at the end of folder names (e.g. `file..png` or `Folder.`).
+- Non-standard spaces like narrow non-breaking spaces (`\u202f`, `\xa0`).
+- Windows-forbidden characters (`< > : " / \ | ? *`).
+
+ALWAYS sanitize file/directory names when adding images, screenshots, assets, or docs to ensure 100% compatibility with Windows Git checkouts.
