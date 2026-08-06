@@ -101,7 +101,7 @@
 
               <!-- Price and View Button -->
               <div class="mt-4 flex items-center justify-between gap-4">
-                <p class="text-2xl font-extrabold leading-tight text-gray-900 dark:text-white">${{ product.price || 0 }}</p>
+                <p class="text-2xl font-extrabold leading-tight text-gray-900 dark:text-white">{{ formatCLP(product.price) }}</p>
 
                 <!-- View Product Button (Admin) -->
                 <button
@@ -137,6 +137,10 @@
 </template>
 
 <script setup>
+const formatCLP = (value) => {
+  return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value || 0)
+}
+
 const props = defineProps({
   products: {
     type: Array,

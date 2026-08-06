@@ -204,10 +204,10 @@ const handleGoToPage = async (page) => {
           class="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="">Todas las categorías</option>
-          <option value="PC">PC</option>
-          <option value="Phone">Phone</option>
-          <option value="Tablet">Tablet</option>
-          <option value="Gaming/Console">Gaming/Console</option>
+          <option value="Muebles Infantiles">Muebles Infantiles</option>
+          <option value="Decoración">Decoración</option>
+          <option value="Juguetes">Juguetes</option>
+          <option value="Ropa Cama">Ropa de Cama</option>
         </select>
         <!-- Marca -->
         <select
@@ -215,10 +215,10 @@ const handleGoToPage = async (page) => {
           class="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="">Todas las marcas</option>
-          <option value="Apple">Apple</option>
-          <option value="Samsung">Samsung</option>
-          <option value="Microsoft">Microsoft</option>
-          <option value="Sony">Sony</option>
+          <option value="DecoKids">DecoKids</option>
+          <option value="Peques">Peques</option>
+          <option value="MiniHome">MiniHome</option>
+          <option value="KidsPlay">KidsPlay</option>
         </select>
         <!-- Rango de precio -->
         <select
@@ -226,10 +226,10 @@ const handleGoToPage = async (page) => {
           class="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="">Todos los precios</option>
-          <option value="1-100">$1 - $100</option>
-          <option value="101-500">$101 - $500</option>
-          <option value="501-1000">$501 - $1000</option>
-          <option value="1001">$1001+</option>
+          <option value="1-20000">$1 - $20.000</option>
+          <option value="20001-50000">$20.001 - $50.000</option>
+          <option value="50001-150000">$50.001 - $150.000</option>
+          <option value="150001">$150.001+</option>
         </select>
         <!-- Nuevo Producto -->
         <button @click="handleCreateNew" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition">

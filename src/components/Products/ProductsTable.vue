@@ -1,6 +1,10 @@
 <script setup>
 import { ref } from 'vue'
 
+const formatCLP = (value) => {
+  return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value || 0)
+}
+
 const props = defineProps({
   products: {
     type: Array,
@@ -130,7 +134,7 @@ const getVisiblePages = () => {
             </td>
             <td class="px-6 py-4">{{ product.category?.name || '-' }}</td>
             <td class="px-6 py-4">{{ product.brand?.name || '-' }}</td>
-            <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">${{ product.price || 0 }}</td>
+            <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">{{ formatCLP(product.price) }}</td>
             <td class="px-6 py-4">{{ product.stock || 0 }}</td>
             <td class="px-6 py-4">{{ product.critical_stock || 0 }}</td>
             <td class="px-6 py-4">
