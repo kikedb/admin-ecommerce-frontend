@@ -39,6 +39,9 @@ export default {
    * @param {object} data - Datos a actualizar
    */
   updateProduct(id, data) {
+    if (data instanceof FormData) {
+      return api.post(`/admin/products/${id}`, data)
+    }
     return api.put(`/admin/products/${id}`, data)
   },
 

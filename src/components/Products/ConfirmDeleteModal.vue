@@ -75,7 +75,7 @@ const closeOnEscape = (e) => {
           :disabled="isLoading"
           class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition flex items-center justify-center gap-2"
         >
-          <span v-if="isLoading" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+          <span v-if="isLoading" class="rounded-full h-4 w-4 border-b-2 border-white"></span>
           {{ isLoading ? 'Eliminando...' : 'Eliminar' }}
         </button>
       </div>

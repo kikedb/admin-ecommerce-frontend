@@ -100,7 +100,7 @@ const getVisiblePages = () => {
           <tr class="border-b dark:border-gray-700">
             <td colspan="7" class="px-6 py-4 text-center">
               <div class="flex items-center justify-center">
-                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                <div class="rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                 <span class="ml-2">Cargando productos...</span>
               </div>
             </td>

@@ -133,7 +133,7 @@
                       : 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed opacity-50'
                   ]"
                 >
-                  <span v-if="isLoading" class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+                  <span v-if="isLoading" class="inline-block rounded-full h-4 w-4 border-b-2 border-white"></span>
                   <span v-else-if="!allFieldsComplete && !editingProduct" class="inline-block w-4 h-4">🔒</span>
                   {{ isLoading ? (editingProduct ? 'Actualizando...' : 'Creando...') : (editingProduct ? 'Actualizar' : 'Crear') }}
                 </button>
@@ -355,7 +355,7 @@ async function saveProduct() {
 }
 
 function buildFormData() {
-  // Usar JSON para PUT, FormData solo si hay imágenes nuevas
+  const formData = new FormData()
   const data = {}
 
   // General information
@@ -429,7 +429,23 @@ function buildFormData() {
   data.units = store.units
   data.max_weight_supported = store.maxWeightSupported
 
-  return data
+  Object.keys(data).forEach(key => {
+    if (data[key] !== null && data[key] !== undefined && data[key] !== '') {
+      formData.append(key, data[key])
+    }
+  })
+
+  // Imagen principal
+  if (store.images && store.images.length > 0 && store.images[0].image instanceof File) {
+    formData.append('main_image_path', store.images[0].image)
+  }
+
+  // Spoofing PUT para Laravel
+  if (props.editingProduct) {
+    formData.append('_method', 'PUT')
+  }
+
+  return formData
 }
 
 function openModal() {

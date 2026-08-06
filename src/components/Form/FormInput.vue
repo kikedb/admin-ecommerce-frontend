@@ -44,7 +44,7 @@
         <!-- Icono de carga -->
         <svg 
           v-if="isLoading" 
-          class="w-5 h-5 animate-spin text-blue-500"
+          class="w-5 h-5 text-blue-500"
           fill="none"
           viewBox="0 0 24 24"
         >

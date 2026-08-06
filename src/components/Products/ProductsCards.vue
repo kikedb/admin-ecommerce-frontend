@@ -3,7 +3,7 @@
     <div class="mx-auto max-w-screen-xl px-4 2xl:px-0">
       <!-- Loading state -->
       <div v-if="isLoading" class="flex items-center justify-center p-8">
-        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+        <div class="rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
         <span class="ml-2">Cargando productos...</span>
       </div>
 
