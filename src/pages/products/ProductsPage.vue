@@ -47,7 +47,8 @@ const handleSearch = async () => {
   const filters = {
     search: searchQuery.value || undefined,
     category: selectedCategory.value || undefined,
-    brand: selectedBrand.value || undefined
+    brand: selectedBrand.value || undefined,
+    price_range: priceRange.value || undefined
   }
   await fetchProducts(1, filters)
 }

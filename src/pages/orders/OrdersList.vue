@@ -1,36 +1,38 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { globalOrders } from '@/stores/mockOrders'
+import { useOrdersStore } from '@/stores/useOrdersStore'
 import { useNotification } from '@/composables/useNotification'
 
 const router = useRouter()
 const { success: showNotification, info: showInfoNotification } = useNotification()
 
+const ordersStore = useOrdersStore()
+onMounted(() => {
+  ordersStore.fetchOrders()
+})
+
 const activeMetric = ref('Pedidos')
 
 const metrics = computed(() => {
-  const all = globalOrders.value
-  const active = all.filter(o => o.status === 'active')
+  const all = ordersStore.orders || []
+  const active = all.filter(o => !o.is_archived)
   
   // Calcular devoluciones sumando los totales de pedidos reembolsados
-  const devoluciones = active.filter(o => o.paymentStatus === 'Reembolsado').reduce((acc, order) => {
-    // Extraer número de algo como "$12.990" -> 12990
-    const val = parseInt(order.total.replace(/[^0-9]/g, '')) || 0
-    return acc + val
+  const devoluciones = active.filter(o => o.payment_status === 'Reembolsado').reduce((acc, order) => {
+    return acc + (order.total || 0)
   }, 0)
 
   // Formatear devoluciones a moneda
   const devolucionesFormatted = devoluciones > 0 ? `$${devoluciones.toLocaleString('es-CL')}` : '$0'
 
-  const ventas = active.filter(o => o.paymentStatus === 'Pagado').reduce((acc, order) => {
-    const val = parseInt(order.total.replace(/[^0-9]/g, '')) || 0
-    return acc + val
+  const ventas = active.filter(o => o.payment_status === 'Pagado').reduce((acc, order) => {
+    return acc + (order.total || 0)
   }, 0)
   const ventasFormatted = ventas > 0 ? `$${ventas.toLocaleString('es-CL')}` : '$0'
 
-  const preparados = active.filter(o => o.fulfillmentStatus === 'Preparado' || o.fulfillmentStatus === 'Devuelto').length
-  const entregados = active.filter(o => o.fulfillmentStatus === 'Entregado').length
+  const preparados = active.filter(o => o.fulfillment_status === 'Preparado' || o.fulfillment_status === 'Devuelto').length
+  const entregados = active.filter(o => o.fulfillment_status === 'Entregado').length
 
   return [
     { label: 'Pedidos', value: active.length.toString(), hasGraph: true, filterable: true },
@@ -53,7 +55,7 @@ const toggleMetricFilter = (metric) => {
   selectedOrders.value = [] // Reset selection on filter change
 }
 
-const orders = globalOrders
+const orders = computed(() => ordersStore.orders || [])
 
 const activeFilter = ref('Todos')
 const showFilterDropdown = ref(false)
@@ -69,19 +71,19 @@ const filteredOrders = computed(() => {
   let result = orders.value
 
   if (activeFilter.value === 'Archivados') {
-    return result.filter(o => o.status === 'archived')
+    return result.filter(o => o.is_archived)
   }
   
-  result = result.filter(o => o.status === 'active')
+  result = result.filter(o => !o.is_archived)
 
   if (activeMetric.value === 'Devoluciones') {
-    result = result.filter(o => o.paymentStatus === 'Reembolsado')
+    result = result.filter(o => o.payment_status === 'Reembolsado')
   } else if (activeMetric.value === 'Total Ventas') {
-    result = result.filter(o => o.paymentStatus === 'Pagado')
+    result = result.filter(o => o.payment_status === 'Pagado')
   } else if (activeMetric.value === 'Pedidos preparados') {
-    result = result.filter(o => o.fulfillmentStatus === 'Preparado')
+    result = result.filter(o => o.fulfillment_status === 'Preparado')
   } else if (activeMetric.value === 'Pedidos entregados') {
-    result = result.filter(o => o.fulfillmentStatus === 'Entregado')
+    result = result.filter(o => o.fulfillment_status === 'Entregado')
   }
 
   return result
@@ -109,8 +111,8 @@ const toggleOrderSelection = (id) => {
 
 const handleBatchPrepare = () => {
   orders.value.forEach(o => {
-    if (selectedOrders.value.includes(o.id) && o.fulfillmentStatus !== 'Preparado') {
-      o.fulfillmentStatus = 'Preparado'
+    if (selectedOrders.value.includes(o.id) && o.fulfillment_status !== 'Preparado') {
+      ordersStore.updateOrder(o.id, { fulfillment_status: 'Preparado' })
     }
   })
   showNotification(`${selectedOrders.value.length} pedidos marcados como preparados.`)
@@ -119,8 +121,8 @@ const handleBatchPrepare = () => {
 
 const handleBatchCapture = () => {
   orders.value.forEach(o => {
-    if (selectedOrders.value.includes(o.id) && o.paymentStatus !== 'Pagado') {
-      o.paymentStatus = 'Pagado'
+    if (selectedOrders.value.includes(o.id) && o.payment_status !== 'Pagado') {
+      ordersStore.updateOrder(o.id, { payment_status: 'Pagado' })
     }
   })
   showNotification(`Pagos capturados para ${selectedOrders.value.length} pedidos.`)
@@ -148,13 +150,13 @@ const handleAction = (action) => {
     }, 100)
   } else if (action === 'Archivar seleccionados') {
     orders.value.forEach(o => {
-      if (selectedOrders.value.includes(o.id)) o.status = 'archived'
+      if (selectedOrders.value.includes(o.id)) ordersStore.updateOrder(o.id, { is_archived: true })
     })
     showNotification(`${selectedOrders.value.length} pedidos archivados.`)
     selectedOrders.value = []
   } else if (action === 'Desarchivar seleccionados') {
     orders.value.forEach(o => {
-      if (selectedOrders.value.includes(o.id)) o.status = 'active'
+      if (selectedOrders.value.includes(o.id)) ordersStore.updateOrder(o.id, { is_archived: false })
     })
     showNotification(`${selectedOrders.value.length} pedidos desarchivados.`)
     selectedOrders.value = []
@@ -356,34 +358,34 @@ const getFulfillmentStatusClass = (status) => {
                 #{{ order.id }}
               </td>
               <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{{ order.date }}</td>
-              <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{{ order.client }}</td>
+              <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{{ order.client_name || (order.customer ? order.customer.first_name : 'Sin cliente') }}</td>
               <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500"></td>
-              <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500 w-24 whitespace-normal">{{ order.canal }}</td>
+              <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500 w-24 whitespace-normal">{{ order.marketplace ? order.marketplace.name : 'Punto de Venta' }}</td>
               <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
-                <div v-if="order.paymentStatus === 'Reembolsado'">
-                  <span class="line-through text-gray-400">{{ order.total }}</span>
+                <div v-if="order.payment_status === 'Reembolsado'">
+                  <span class="line-through text-gray-400">${{ (order.total || 0).toLocaleString('es-CL') }}</span>
                   <span class="block font-medium">$0</span>
                 </div>
-                <span v-else>{{ order.total }}</span>
+                <span v-else>${{ (order.total || 0).toLocaleString('es-CL') }}</span>
               </td>
               <td class="px-3 py-4 whitespace-nowrap text-sm">
-                <span :class="getPaymentStatusClass(order.paymentStatus).bg" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium">
-                  <span :class="getPaymentStatusClass(order.paymentStatus).dot" class="w-1.5 h-1.5 rounded-full mr-1.5"></span> {{ order.paymentStatus }}
+                <span :class="getPaymentStatusClass(order.payment_status).bg" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium">
+                  <span :class="getPaymentStatusClass(order.payment_status).dot" class="w-1.5 h-1.5 rounded-full mr-1.5"></span> {{ order.payment_status || 'Pendiente' }}
                 </span>
               </td>
               <td class="px-3 py-4 whitespace-nowrap text-sm">
-                <span :class="getFulfillmentStatusClass(order.fulfillmentStatus).bg" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium">
-                  <span :class="getFulfillmentStatusClass(order.fulfillmentStatus).dot" class="w-1.5 h-1.5 rounded-full mr-1.5"></span> {{ order.fulfillmentStatus }}
+                <span :class="getFulfillmentStatusClass(order.fulfillment_status).bg" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium">
+                  <span :class="getFulfillmentStatusClass(order.fulfillment_status).dot" class="w-1.5 h-1.5 rounded-full mr-1.5"></span> {{ order.fulfillment_status || 'No preparado' }}
                 </span>
               </td>
               <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500 w-24 whitespace-normal">
-                <div v-if="order.fulfillmentStatus === 'Devuelto'">
-                  <span class="line-through text-gray-400">{{ order.items }}</span>
+                <div v-if="order.fulfillment_status === 'Devuelto'">
+                  <span class="line-through text-gray-400">{{ order.products ? order.products.length : 0 }} artículos</span>
                   <span class="block text-orange-600 font-medium">0 artículos</span>
                 </div>
-                <span v-else>{{ order.items }}</span>
+                <span v-else>{{ order.products ? order.products.length : 0 }} artículos</span>
               </td>
-              <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500 w-24 whitespace-normal">{{ order.deliveryMethod }}</td>
+              <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500 w-24 whitespace-normal">{{ order.delivery_method || 'En tienda' }}</td>
             </tr>
           </tbody>
         </table>

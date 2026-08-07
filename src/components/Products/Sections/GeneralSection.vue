@@ -124,7 +124,7 @@
           @change="handleCategoryChange"
           :disabled="loading"
         >
-          <option value="">{{ loading ? 'Cargando...' : 'Seleccionar' }}</option>
+          <option :value="null">{{ loading ? 'Cargando...' : 'Seleccionar' }}</option>
           <option v-for="cat in categories || []" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
         </select>
       </div>
@@ -138,7 +138,7 @@
           class="form-select"
           :disabled="loading"
         >
-          <option value="">{{ loading ? 'Cargando...' : 'Seleccionar' }}</option>
+          <option :value="null">{{ loading ? 'Cargando...' : 'Seleccionar' }}</option>
           <option v-for="brand in brands || []" :key="brand.id" :value="brand.id">{{ brand.name }}</option>
         </select>
       </div>
@@ -153,7 +153,7 @@
           @change="handleColorChange"
           :disabled="loading"
         >
-          <option value="">{{ loading ? 'Cargando...' : 'Seleccionar' }}</option>
+          <option :value="null">{{ loading ? 'Cargando...' : 'Seleccionar' }}</option>
           <option v-for="color in colors || []" :key="color.id" :value="color.id">{{ color.name }}</option>
         </select>
       </div>
@@ -168,7 +168,7 @@
           @change="handleSerieChange"
           :disabled="loading"
         >
-          <option value="">{{ loading ? 'Cargando...' : 'Seleccionar' }}</option>
+          <option :value="null">{{ loading ? 'Cargando...' : 'Seleccionar' }}</option>
           <option v-for="serie in series || []" :key="serie.id" :value="serie.id">{{ serie.name }}</option>
         </select>
       </div>
@@ -183,7 +183,7 @@
           @change="handleMaterialChange"
           :disabled="loading"
         >
-          <option value="">{{ loading ? 'Cargando...' : 'Seleccionar' }}</option>
+          <option :value="null">{{ loading ? 'Cargando...' : 'Seleccionar' }}</option>
           <option v-for="material in materials || []" :key="material.id" :value="material.id">{{ material.name }}</option>
         </select>
       </div>
@@ -272,17 +272,9 @@
             v-model="store.shortDescription"
             rows="7"
             class="form-input resize-none"
-            placeholder="Generado automáticamente por Sofia AI"
-            disabled
+            placeholder="Escriba manualmente o deje que Sofia AI lo genere"
+            :disabled="isGenerating"
           ></textarea>
-          <div class="absolute inset-0 rounded-lg pointer-events-none flex items-center justify-center bg-black/5 dark:bg-black/20">
-            <div class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600">
-              <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.658 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" clip-rule="evenodd"></path>
-              </svg>
-              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Campo automático</span>
-            </div>
-          </div>
         </div>
         <div v-if="isDescriptionsEnabled && store.shortDescription && !isGenerating" class="mt-3 flex items-start gap-2 px-3 py-2.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
           <span class="text-lg">✨</span>

@@ -1,12 +1,14 @@
 <script setup>
 import { ref, nextTick, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { globalOrders } from '@/stores/mockOrders'
+import { useOrdersStore } from '@/stores/useOrdersStore'
 import { useNotification } from '@/composables/useNotification'
 
 const route = useRoute()
 const router = useRouter()
 const orderId = route.params.id || '5888'
+
+const ordersStore = useOrdersStore()
 
 const showMoreActions = ref(false)
 const showRefundModal = ref(false)
@@ -79,14 +81,11 @@ const confirmRefund = () => {
   showRefundModal.value = false
   isRefunded.value = true
   
-  // Actualizar estado global para que se refleje en la tabla principal
-  const order = globalOrders.value.find(o => o.id == orderId)
-  if (order) {
-    order.paymentStatus = 'Reembolsado'
-    if (restockItems.value) {
-      order.fulfillmentStatus = 'Devuelto'
-    }
-  }
+  // Actualizar en backend mediante API
+  ordersStore.updateOrder(orderId, {
+    payment_status: 'Reembolsado',
+    fulfillment_status: restockItems.value ? 'Devuelto' : undefined
+  })
 
   timelineEvents.value.unshift({
     id: Date.now(),
@@ -116,20 +115,16 @@ const confirmDuplicate = () => {
   showNotification('Pedido duplicado.')
   const newId = `${orderId}-D1`
   
-  // Agregar el pedido duplicado al array global para que aparezca en la lista
-  const originalOrder = globalOrders.value.find(o => o.id == orderId)
-  if (originalOrder) {
-    globalOrders.value.unshift({
-      ...originalOrder,
-      id: newId,
-      date: 'Justo ahora',
-      status: 'active'
-    })
-  } else {
-    globalOrders.value.unshift({
-      id: newId, date: 'Justo ahora', client: 'Sin cliente', canal: 'Point of Sale', total: '$0', paymentStatus: 'Pendiente', fulfillmentStatus: 'No preparado', deliveryStatus: '', items: '0 artículos', deliveryMethod: 'En tienda', status: 'active'
-    })
-  }
+  // Crear orden duplicada en backend
+  ordersStore.createOrder({
+    // Payload mockeado de copia
+    status: 'Pendiente',
+    total: 0
+  }).then((newOrder) => {
+    setTimeout(() => {
+      router.push(`/admin/orders/${newOrder.id}`)
+    }, 1000)
+  })
 
   setTimeout(() => {
     router.push(`/admin/orders/${newId}`)
