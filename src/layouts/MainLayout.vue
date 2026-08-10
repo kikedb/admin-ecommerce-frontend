@@ -1,36 +1,36 @@
 <script setup>
-import Navbar from '@/components/Navbar.vue'
-import Sidebar from '@/components/Sidebar.vue'
-import { useLayoutStore } from '@/stores/layout'
+import { ref } from 'vue';
+import { Toaster } from 'vue-sonner';
+import Navbar from './Navbar.vue';
+import Sidebar from './Sidebar.vue';
 
-const layoutStore = useLayoutStore()
+const sidebarOpen = ref(false);
+
+const toggleSidebar = () => {
+  sidebarOpen.value = !sidebarOpen.value;
+};
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-    <Navbar />
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+    <Navbar @toggle-sidebar="toggleSidebar" />
     
-    <!-- Mobile overlay -->
+    <Sidebar :class="[sidebarOpen ? 'translate-x-0' : '-translate-x-full', 'sm:translate-x-0']" />
+    
+    <!-- Backdrop for mobile sidebar -->
     <div 
-      v-if="layoutStore.isSidebarOpen" 
-      @click="layoutStore.closeSidebar"
-      class="fixed inset-0 bg-black/50 z-30 lg:hidden"
+      v-if="sidebarOpen" 
+      @click="sidebarOpen = false"
+      class="fixed inset-0 z-30 bg-gray-900/50 sm:hidden"
     ></div>
 
-    <div class="flex w-full min-h-screen pt-[60px]"> <!-- pt to account for Navbar height -->
-      <Sidebar />
-
-      <main class="flex-1 p-6 lg:ml-64 overflow-y-auto">
-        <slot />
+    <div class="p-4 sm:ml-64 pt-20">
+      <main class="max-w-7xl mx-auto">
+        <router-view />
       </main>
     </div>
+
+    <!-- Global Toaster -->
+    <Toaster richColors position="top-right" />
   </div>
 </template>
-
-<style scoped>
-@media (max-width: 1023px) {
-  main {
-    margin-left: 0;
-  }
-}
-</style>
