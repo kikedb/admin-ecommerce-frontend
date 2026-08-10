@@ -2,7 +2,7 @@
 
 ## Visión General
 
-SPA (Single Page Application) construido con **Vue 3 + Vite** que actúa como panel administrativo para un backend ecommerce en Laravel. Implementa un diseño profesional basado en Flowbite con soporte para dark mode.
+SPA (Single Page Application) construido con **Vue 3 + Vite** que actúa como panel administrativo para un backend ecommerce en Laravel. Implementa un diseño profesional basado en Custom Components y Tailwind CSS con soporte para dark mode.
 
 ## Stack Tecnológico
 
@@ -12,7 +12,7 @@ SPA (Single Page Application) construido con **Vue 3 + Vite** que actúa como pa
 - **Pinia 2.1.4** - Gestión centralizada de estado
 - **Axios 1.5.0** - Cliente HTTP con interceptores
 - **Tailwind CSS 3.3.5** - Framework de estilos utilitarios
-- **Flowbite Vue 0.0.11** - Componentes UI predefinidos
+- **Headless UI** - Componentes accesibles
 - **Chart.js** - Visualización de datos
 - **Date-fns** - Manejo de fechas
 

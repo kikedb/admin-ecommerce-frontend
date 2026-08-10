@@ -15,7 +15,11 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 class="text-lg font-semibold text-gray-900 mb-4">Foto de perfil</h3>
           <div class="flex flex-col items-center">
-            <img src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/bonnie-green.png" class="w-32 h-32 rounded-full mb-4 object-cover border-4 border-gray-100" alt="Avatar">
+            <img 
+              src="https://ui-avatars.com/api/?name=Admin+Bilbola&background=2563eb&color=fff&size=128" 
+              class="w-32 h-32 rounded-full mb-4 object-cover border-4 border-gray-100 dark:border-gray-700" 
+              alt="Avatar"
+            >
             <button class="px-3 py-1.5 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded text-sm font-medium shadow-sm transition">Cambiar imagen</button>
           </div>
         </div>

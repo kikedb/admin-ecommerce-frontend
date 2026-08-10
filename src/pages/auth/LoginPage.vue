@@ -155,7 +155,7 @@ Bienvenido de vuelta</h1>
 
       <!-- Ilustración -->
       <div class="mr-auto place-self-center lg:col-span-6">
-        <img class="hidden mx-auto lg:flex" src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/authentication/illustration.svg" alt="Ilustración de autenticación" />
+        <img class="hidden mx-auto lg:flex rounded-2xl shadow-lg" src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=800" alt="Ilustración de autenticación" />
       </div>
     </div>
   </section>
