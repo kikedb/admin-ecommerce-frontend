@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue';
-import FormInput from './FormInput.vue';
+import FormInput from '@/components/Form/FormInput.vue';
 
 const props = defineProps({
   modelValue: {

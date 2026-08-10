@@ -6,11 +6,11 @@ import { LayoutDashboard, Users, ShoppingCart, Settings, Package } from 'lucide-
 const route = useRoute();
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Catálogo', href: '/catalog', icon: Package },
-  { name: 'Órdenes', href: '/orders', icon: ShoppingCart },
+  { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+  { name: 'Catálogo', href: '/admin/products', icon: Package },
+  { name: 'Órdenes', href: '/admin/orders', icon: ShoppingCart },
   { name: 'Clientes', href: '/customers', icon: Users },
-  { name: 'Configuración', href: '/settings', icon: Settings },
+  { name: 'Configuración', href: '/admin/settings', icon: Settings },
 ];
 
 const isActive = (path) => route.path === path || route.path.startsWith(path + '/');

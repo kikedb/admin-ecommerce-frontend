@@ -151,10 +151,10 @@ import { ref, watch, computed } from 'vue'
 import { useProductStore } from '@/stores/product'
 import { useProducts } from '@/composables/useProducts'
 import { useFormValidation } from '@/composables/useFormValidation'
-import GeneralSection from './Sections/GeneralSection.vue'
-import ImagesSection from './Sections/ImagesSection.vue'
-import LogisticSection from './Sections/LogisticSection.vue'
-import FeaturesSection from './Sections/FeaturesSection.vue'
+import GeneralSection from '@/components/Products/Sections/GeneralSection.vue'
+import ImagesSection from '@/components/Products/Sections/ImagesSection.vue'
+import LogisticSection from '@/components/Products/Sections/LogisticSection.vue'
+import FeaturesSection from '@/components/Products/Sections/FeaturesSection.vue'
 
 const props = defineProps({
   editingProduct: {

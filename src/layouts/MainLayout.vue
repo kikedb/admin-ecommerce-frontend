@@ -1,8 +1,7 @@
 <script setup>
 import { ref } from 'vue';
-import { Toaster } from 'vue-sonner';
-import Navbar from './Navbar.vue';
-import Sidebar from './Sidebar.vue';
+import Navbar from '@/components/Layout/Navbar.vue';
+import Sidebar from '@/components/Layout/Sidebar.vue';
 
 const sidebarOpen = ref(false);
 
@@ -29,8 +28,5 @@ const toggleSidebar = () => {
         <router-view />
       </main>
     </div>
-
-    <!-- Global Toaster -->
-    <Toaster richColors position="top-right" />
   </div>
 </template>
