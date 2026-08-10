@@ -10,15 +10,18 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
   },
   "dependencies": {
+    "@headlessui/vue": "^1.7.23",
     "@vueuse/core": "^10.7.0",
     "axios": "^1.5.0",
     "chart.js": "^4.4.0",
     "date-fns": "^2.30.0",
     "flowbite-vue": "^0.0.11",
+    "lucide-vue-next": "^1.0.0",
     "pinia": "^2.1.4",
     "vue": "^3.3.4",
     "vue-chartjs": "^5.2.0",
     "vue-router": "^4.2.5",
+    "vue-sonner": "^2.0.9",
     "vuedraggable": "^2.24.3"
   },
   "devDependencies": {
