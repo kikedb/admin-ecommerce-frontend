@@ -1,8 +1,15 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { Search, Plus, List, CalendarDays, Filter, ChevronLeft, ChevronRight, Mail, MessageSquare, Phone, Volume2 } from 'lucide-vue-next'
 
 import { useMarketingStore } from '@/stores/mockMarketing'
+import PageHeader from '@/components/Layout/PageHeader.vue'
+import Card from '@/components/ui/Card.vue'
+import DataTable from '@/components/ui/DataTable.vue'
+import Button from '@/components/ui/Button.vue'
+import StatusBadge from '@/components/ui/StatusBadge.vue'
+import FormSelect from '@/components/Form/FormSelect.vue'
 
 const router = useRouter()
 const marketingStore = useMarketingStore()
@@ -13,6 +20,7 @@ const activeTab = ref('Todos')
 const tabs = ['Todos', 'Correo electrónico', 'SMS', 'WhatsApp', 'Audio']
 const currentPage = ref(1)
 const viewMode = ref('lista')
+const searchQuery = ref('')
 
 const weekDays = [
   { name: 'Lun 6', date: '2026-07-06' },
@@ -25,15 +33,12 @@ const weekDays = [
 ]
 
 const getCampaignsForDay = (dayName) => {
-  // Simple mock matching for demonstration
   if (dayName === 'Lun 6') return [campaigns.value[0]]
   if (dayName === 'Vie 10') return [campaigns.value[1]]
   return []
 }
 
 const goToCampaign = (id) => {
-  // En un caso real, si es 'Borrador' iría a edit/new, pero para la demostración
-  // del dashboard de resultados, lo enviaremos al dashboard independientemente.
   router.push(`/admin/marketing/campaigns/${id}`)
 }
 
@@ -45,58 +50,98 @@ const kpis = [
 ]
 
 const filteredCampaigns = computed(() => {
-  if (activeTab.value === 'Todos') return campaigns.value
-  return campaigns.value.filter(c => c.channel === activeTab.value)
+  let result = campaigns.value
+  
+  if (activeTab.value !== 'Todos') {
+    result = result.filter(c => c.channel === activeTab.value)
+  }
+  
+  if (searchQuery.value) {
+    result = result.filter(c => c.subject.toLowerCase().includes(searchQuery.value.toLowerCase()))
+  }
+  
+  return result
 })
 
 const goToNewCampaign = () => {
   router.push('/admin/marketing/campaigns/new')
 }
+
+const columns = [
+  { key: 'subject', label: 'Asunto' },
+  { key: 'status', label: 'Estado' },
+  { key: 'date', label: 'Fecha programada' },
+  { key: 'openRate', label: 'Apertura' },
+  { key: 'clickRate', label: 'Clics' },
+  { key: 'conversionRate', label: 'Conversión' },
+  { key: 'sales', label: 'Ventas', align: 'right' }
+]
+
+const getStatusType = (status) => {
+  switch (status) {
+    case 'Enviado': return 'success'
+    case 'Programado': return 'info'
+    case 'Borrador': return 'default'
+    default: return 'default'
+  }
+}
+
+const getChannelIcon = (channel) => {
+  switch (channel) {
+    case 'Correo electrónico': return Mail
+    case 'SMS': return MessageSquare
+    case 'WhatsApp': return Phone
+    case 'Audio': return Volume2
+    default: return Mail
+  }
+}
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div class="space-y-6 max-w-7xl mx-auto pb-12">
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Campañas</h1>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Gestiona tus envíos de marketing por correo y SMS.</p>
-      </div>
-      <div class="flex items-center gap-4">
+    <PageHeader title="Campañas">
+      <template #description>Gestiona tus envíos de marketing por correo y SMS.</template>
+      <template #actions>
         <!-- View Toggle -->
-        <div class="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-lg shadow-inner">
-          <button @click="viewMode = 'lista'" :class="viewMode === 'lista' ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'" class="px-4 py-1.5 text-sm font-medium rounded-md transition-all">
-            Lista
+        <div class="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-lg shadow-inner mr-2">
+          <button @click="viewMode = 'lista'" :class="viewMode === 'lista' ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'" class="px-4 py-1.5 text-sm font-medium rounded-md transition-all flex items-center gap-2">
+            <List class="w-4 h-4" /> Lista
           </button>
-          <button @click="viewMode = 'planificador'" :class="viewMode === 'planificador' ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'" class="px-4 py-1.5 text-sm font-medium rounded-md transition-all">
-            Planificador
+          <button @click="viewMode = 'planificador'" :class="viewMode === 'planificador' ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'" class="px-4 py-1.5 text-sm font-medium rounded-md transition-all flex items-center gap-2">
+            <CalendarDays class="w-4 h-4" /> Planificador
           </button>
         </div>
-        <button @click="goToNewCampaign" class="px-4 py-2 bg-gray-900 text-white dark:bg-white dark:text-gray-900 text-sm font-medium rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition shadow-sm">
-          Crear campaña
-        </button>
-      </div>
-    </div>
+        <Button variant="primary" @click="goToNewCampaign" class="gap-2">
+          <Plus class="w-4 h-4" /> Crear campaña
+        </Button>
+      </template>
+    </PageHeader>
 
     <!-- KPI Cards -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+    <Card class="p-6">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Rendimiento general</h2>
-        <select v-model="dateRange" class="text-sm border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500">
-          <option>Últimos 7 días</option>
-          <option>Últimos 30 días</option>
-          <option>Este mes</option>
-          <option>Este año</option>
-        </select>
+        <div class="w-40">
+          <FormSelect
+            v-model="dateRange"
+            :options="[
+              {value: 'Últimos 7 días', label: 'Últimos 7 días'},
+              {value: 'Últimos 30 días', label: 'Últimos 30 días'},
+              {value: 'Este mes', label: 'Este mes'},
+              {value: 'Este año', label: 'Este año'}
+            ]"
+          />
+        </div>
       </div>
       
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div v-for="kpi in kpis" :key="kpi.label" class="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+        <div v-for="kpi in kpis" :key="kpi.label" class="p-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
           <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ kpi.label }}</p>
           <div class="mt-2 flex items-baseline gap-2">
             <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ kpi.value }}</p>
             <span 
-              class="text-xs font-medium px-1.5 py-0.5 rounded"
+              class="text-xs font-medium px-2 py-0.5 rounded-full"
               :class="kpi.isPositive ? 'text-green-700 bg-green-100 dark:text-green-400 dark:bg-green-900/30' : 'text-red-700 bg-red-100 dark:text-red-400 dark:bg-red-900/30'"
             >
               {{ kpi.change }}
@@ -104,123 +149,97 @@ const goToNewCampaign = () => {
           </div>
         </div>
       </div>
-    </div>
+    </Card>
 
-    <!-- Campaigns List -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <!-- Campaigns List / Planner -->
+    <Card class="p-0 border border-gray-200 dark:border-gray-700 overflow-hidden">
       <!-- Tabs -->
-      <div class="border-b border-gray-200 dark:border-gray-700 px-4 flex gap-6">
+      <div class="border-b border-gray-200 dark:border-gray-700 px-4 flex gap-6 overflow-x-auto hide-scrollbar">
         <button 
           v-for="tab in tabs" 
           :key="tab"
           @click="activeTab = tab"
-          class="py-4 text-sm font-medium border-b-2 transition-colors"
-          :class="activeTab === tab ? 'border-gray-900 text-gray-900 dark:border-white dark:text-white' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'"
+          class="py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap"
+          :class="activeTab === tab ? 'border-primary-600 text-primary-600 dark:border-primary-500 dark:text-primary-500' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'"
         >
           {{ tab }}
         </button>
       </div>
 
-      <!-- Table Filters -->
-      <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex gap-4">
-        <div class="relative flex-1 max-w-md">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-          </div>
-          <input type="text" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Buscar campañas">
-        </div>
-        <button class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-2">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
-          Filtrar
-        </button>
-      </div>
-
       <!-- Table View -->
-      <div v-if="viewMode === 'lista'" class="overflow-x-auto">
-        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-          <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700/50 dark:text-gray-400">
-            <tr>
-              <th scope="col" class="px-6 py-3">Asunto</th>
-              <th scope="col" class="px-6 py-3">Estado</th>
-              <th scope="col" class="px-6 py-3">Fecha programada</th>
-              <th scope="col" class="px-6 py-3">Apertura</th>
-              <th scope="col" class="px-6 py-3">Clics</th>
-              <th scope="col" class="px-6 py-3">Conversión</th>
-              <th scope="col" class="px-6 py-3">Ventas</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="campaign in filteredCampaigns" :key="campaign.id" class="border-b border-gray-100 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition cursor-pointer" @click="goToCampaign(campaign.id)">
-              <td class="px-6 py-4">
-                <div class="flex items-center gap-3">
-                  <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="campaign.channelIcon"></path></svg>
-                  </div>
-                  <div>
-                    <div class="text-sm font-medium text-gray-900 dark:text-white transition-colors">{{ campaign.subject }}</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ campaign.channel }}</div>
-                  </div>
-                </div>
-              </td>
-              <td class="px-6 py-4">
-                <span :class="['px-2.5 py-0.5 rounded-full text-xs font-medium', campaign.statusColor]">
-                  {{ campaign.status }}
-                </span>
-              </td>
-              <td class="px-6 py-4">{{ campaign.date }}</td>
-              <td class="px-6 py-4">{{ campaign.openRate }}</td>
-              <td class="px-6 py-4">{{ campaign.clickRate }}</td>
-              <td class="px-6 py-4">{{ campaign.conversionRate }}</td>
-              <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">{{ campaign.sales }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <template v-if="viewMode === 'lista'">
+        <!-- Table Filters -->
+        <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex gap-4">
+          <div class="relative flex-1 max-w-md">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search class="w-4 h-4 text-gray-400" />
+            </div>
+            <input v-model="searchQuery" type="text" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:bg-white focus:ring-1 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white shadow-sm transition-colors" placeholder="Buscar campañas">
+          </div>
+          <Button variant="outline" class="gap-2 bg-white dark:bg-gray-800">
+            <Filter class="w-4 h-4" /> Filtrar
+          </Button>
+        </div>
+
+        <DataTable :columns="columns" :data="filteredCampaigns" empty-message="No se encontraron campañas.">
+          <template #cell-subject="{ row }">
+            <div class="flex items-center gap-3 cursor-pointer" @click="goToCampaign(row.id)">
+              <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">
+                <component :is="getChannelIcon(row.channel)" class="w-4 h-4" />
+              </div>
+              <div>
+                <div class="text-sm font-medium text-gray-900 dark:text-white hover:text-primary-600 hover:underline transition-colors">{{ row.subject }}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">{{ row.channel }}</div>
+              </div>
+            </div>
+          </template>
+
+          <template #cell-status="{ row }">
+            <StatusBadge :status="getStatusType(row.status)">
+              {{ row.status }}
+            </StatusBadge>
+          </template>
+
+          <template #cell-sales="{ row }">
+            <span class="font-medium text-gray-900 dark:text-white">{{ row.sales }}</span>
+          </template>
+        </DataTable>
+      </template>
 
       <!-- Planner View -->
-      <div v-if="viewMode === 'planificador'" class="p-6 bg-gray-50 dark:bg-gray-900/30 overflow-x-auto">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <button class="p-1 text-gray-400 hover:text-gray-900 transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
-            6 – 12 de jul de 2026
-            <button class="p-1 text-gray-400 hover:text-gray-900 transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
-          </h2>
-          <button class="px-3 py-1 bg-white border border-gray-300 rounded text-sm font-medium hover:bg-gray-50 shadow-sm">Hoy</button>
-        </div>
-        
-        <div class="min-w-[800px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl overflow-hidden flex">
-          <div v-for="(day, i) in weekDays" :key="day.name" class="flex-1 border-r border-gray-200 dark:border-gray-700 last:border-0 min-h-[300px] p-3 flex flex-col">
-            <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 block" :class="{'text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full w-max': i === 3}">{{ day.name }}</span>
-            <div class="flex flex-col gap-2 flex-1">
-              <div 
-                v-for="camp in getCampaignsForDay(day.name)" :key="camp.id"
-                @click="goToCampaign(camp.id)"
-                class="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 p-2 rounded-lg cursor-pointer hover:shadow-sm hover:border-blue-300 transition"
-              >
-                <div class="flex items-center gap-1.5 mb-1 text-blue-700 dark:text-blue-300">
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="camp.channelIcon"></path></svg>
-                  <span class="text-[10px] font-bold uppercase">{{ camp.channel === 'Correo electrónico' ? 'Correo' : camp.channel }}</span>
+      <template v-else>
+        <div class="p-6 bg-gray-50 dark:bg-gray-900/30 overflow-x-auto min-h-[400px]">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <button class="p-1 text-gray-400 hover:text-gray-900 dark:hover:text-white transition"><ChevronLeft class="w-5 h-5" /></button>
+              6 – 12 de jul de 2026
+              <button class="p-1 text-gray-400 hover:text-gray-900 dark:hover:text-white transition"><ChevronRight class="w-5 h-5" /></button>
+            </h2>
+            <Button variant="outline" size="sm" class="bg-white dark:bg-gray-800">Hoy</Button>
+          </div>
+          
+          <div class="min-w-[800px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl overflow-hidden flex h-full">
+            <div v-for="(day, i) in weekDays" :key="day.name" class="flex-1 border-r border-gray-200 dark:border-gray-700 last:border-0 min-h-[300px] p-3 flex flex-col">
+              <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 block" :class="{'text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full w-max': i === 3}">{{ day.name }}</span>
+              <div class="flex flex-col gap-2 flex-1">
+                <div 
+                  v-for="camp in getCampaignsForDay(day.name)" :key="camp.id"
+                  @click="goToCampaign(camp.id)"
+                  class="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 p-2 rounded-lg cursor-pointer hover:shadow-sm hover:border-primary-300 dark:hover:border-primary-700 transition"
+                >
+                  <div class="flex items-center gap-1.5 mb-1 text-primary-700 dark:text-primary-400">
+                    <component :is="getChannelIcon(camp.channel)" class="w-3 h-3" />
+                    <span class="text-[10px] font-bold uppercase">{{ camp.channel === 'Correo electrónico' ? 'Correo' : camp.channel }}</span>
+                  </div>
+                  <p class="text-xs font-medium text-gray-900 dark:text-white leading-tight line-clamp-2">{{ camp.subject }}</p>
+                  <p class="text-[10px] text-gray-500 mt-1">{{ camp.status }}</p>
                 </div>
-                <p class="text-xs font-medium text-gray-900 dark:text-white leading-tight line-clamp-2">{{ camp.subject }}</p>
-                <p class="text-[10px] text-gray-500 mt-1">{{ camp.status }}</p>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      
-      <!-- Pagination -->
-      <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-        <span class="text-sm text-gray-500 dark:text-gray-400">Mostrando <span class="font-medium text-gray-900 dark:text-white">{{ filteredCampaigns.length ? 1 : 0 }}</span> a <span class="font-medium text-gray-900 dark:text-white">{{ filteredCampaigns.length }}</span> de <span class="font-medium text-gray-900 dark:text-white">{{ filteredCampaigns.length }}</span> campañas</span>
-        <div class="flex gap-2">
-          <button class="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed" :disabled="currentPage === 1">
-            Anterior
-          </button>
-          <button class="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed" :disabled="true">
-            Siguiente
-          </button>
-        </div>
-      </div>
-    </div>
+      </template>
+
+    </Card>
   </div>
 </template>

@@ -35,7 +35,9 @@ const hasData = computed(() => props.data && props.data.length > 0);
             scope="col"
             :class="['px-6 py-3', col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left']"
           >
-            {{ col.label }}
+            <slot :name="`header-${col.key}`" :column="col">
+              {{ col.label }}
+            </slot>
           </th>
           <th v-if="$slots.actions" scope="col" class="px-6 py-3 text-right">
             Acciones

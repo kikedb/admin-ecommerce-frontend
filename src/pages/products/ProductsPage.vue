@@ -1,11 +1,18 @@
 <script setup>
 import { onMounted, ref } from 'vue'
+import { Plus, List, Grid } from 'lucide-vue-next'
 import { useProducts } from '@/composables/useProducts'
 import productsService from '@/services/products.service'
 import ProductsTable from '@/components/Products/ProductsTable.vue'
 import ProductsCards from '@/components/Products/ProductsCards.vue'
 import ProductFormModal from '@/components/Products/ProductFormModal.vue'
 import ConfirmDeleteModal from '@/components/Products/ConfirmDeleteModal.vue'
+
+import PageHeader from '@/components/Layout/PageHeader.vue'
+import Card from '@/components/ui/Card.vue'
+import Button from '@/components/ui/Button.vue'
+import FormInput from '@/components/Form/FormInput.vue'
+import FormSelect from '@/components/Form/FormSelect.vue'
 
 const {
   products,
@@ -39,7 +46,6 @@ const deleteIsBulk = ref(false)
 const selectedProductIds = ref([])
 
 onMounted(async () => {
-  // Cargar productos iniciales
   await fetchProducts(1)
 })
 
@@ -53,22 +59,12 @@ const handleSearch = async () => {
   await fetchProducts(1, filters)
 }
 
-const handleClearFilters = async () => {
-  searchQuery.value = ''
-  selectedCategory.value = ''
-  selectedBrand.value = ''
-  priceRange.value = ''
-  await fetchProducts(1)
-}
-
 const productFormModalRef = ref(null)
 
 const handleEdit = async (productId) => {
   try {
-    // Obtener el producto completo con todas sus relaciones
     const response = await productsService.getProductById(productId)
     editingProduct.value = response.data.data || response.data
-    // Abrir modal
     productFormModalRef.value?.openModal()
   } catch (err) {
     console.error('Error al cargar producto:', err)
@@ -80,7 +76,6 @@ const handleDelete = (productId) => {
   if (product) {
     selectedProductForDelete.value = product
     deleteIsBulk.value = false
-    hasAssociatedSales.value = false // Por defecto asumimos que es soft delete
     deleteModalOpen.value = true
   }
 }
@@ -102,10 +97,8 @@ const handleDeleteConfirm = async () => {
   deleteLoading.value = true
   try {
     if (deleteIsBulk.value && selectedProductIds.value.length > 0) {
-      // Bulk delete
       await deleteProducts(selectedProductIds.value)
     } else if (selectedProductForDelete.value) {
-      // Intentar soft delete (si tiene ventas, el composable hará fallback a disable)
       await deleteProduct(selectedProductForDelete.value.id)
     }
     deleteModalOpen.value = false
@@ -141,123 +134,118 @@ const handlePrevPage = async () => {
 const handleGoToPage = async (page) => {
   await fetchProducts(page)
 }
+
+const categoryOptions = [
+  { value: 'Muebles Infantiles', label: 'Muebles Infantiles' },
+  { value: 'Decoración', label: 'Decoración' },
+  { value: 'Juguetes', label: 'Juguetes' },
+  { value: 'Ropa Cama', label: 'Ropa de Cama' }
+]
+
+const brandOptions = [
+  { value: 'DecoKids', label: 'DecoKids' },
+  { value: 'Peques', label: 'Peques' },
+  { value: 'MiniHome', label: 'MiniHome' },
+  { value: 'KidsPlay', label: 'KidsPlay' }
+]
+
+const priceOptions = [
+  { value: '1-20000', label: '$1 - $20.000' },
+  { value: '20001-50000', label: '$20.001 - $50.000' },
+  { value: '50001-150000', label: '$50.001 - $150.000' },
+  { value: '150001', label: '$150.001+' }
+]
 </script>
 
 <template>
   <div>
     <!-- Header -->
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Productos</h1>
-      <p class="text-gray-600 dark:text-gray-400 mt-2">Gestión de productos, categorías, marcas y colores</p>
-    </div>
+    <PageHeader title="Catálogo de Productos">
+      <template #description>Gestión de inventario, precios y detalles de productos</template>
+      <template #actions>
+        <Button variant="primary" @click="handleCreateNew" class="gap-2">
+          <Plus class="w-4 h-4" /> Nuevo Producto
+        </Button>
+      </template>
+    </PageHeader>
 
     <!-- Error message -->
-    <div v-if="error" class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-      <p class="text-red-800 dark:text-red-200">{{ error }}</p>
+    <div v-if="error" class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+      <p class="text-sm text-red-800 dark:text-red-200">{{ error }}</p>
     </div>
 
     <!-- Filtros y Vista Toggle -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700 mb-6">
+    <Card class="p-5 mb-6">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Filtros</h3>
+        <h3 class="text-base font-medium text-gray-900 dark:text-white">Filtros de búsqueda</h3>
         <!-- View Toggle -->
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
           <button
             @click="viewMode = 'table'"
-            :class="{
-              'bg-blue-600 text-white': viewMode === 'table',
-              'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-300': viewMode !== 'table'
-            }"
-            class="px-3 py-2 rounded-lg transition flex items-center gap-2"
+            :class="['p-1.5 rounded-md transition-colors', viewMode === 'table' ? 'bg-white text-primary-600 shadow-sm dark:bg-gray-700 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white']"
             title="Vista de tabla"
           >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
-            </svg>
+            <List class="w-4 h-4" />
           </button>
           <button
             @click="viewMode = 'cards'"
-            :class="{
-              'bg-blue-600 text-white': viewMode === 'cards',
-              'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-300': viewMode !== 'cards'
-            }"
-            class="px-3 py-2 rounded-lg transition flex items-center gap-2"
+            :class="['p-1.5 rounded-md transition-colors', viewMode === 'cards' ? 'bg-white text-primary-600 shadow-sm dark:bg-gray-700 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white']"
             title="Vista de tarjetas"
           >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 4H5a2 2 0 00-2 2v14a2 2 0 002 2h4m0-21v21m0-21h10a2 2 0 012 2v14a2 2 0 01-2 2h-10m0-21v21m0 0H9"></path>
-            </svg>
+            <Grid class="w-4 h-4" />
           </button>
         </div>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+      
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <!-- Búsqueda -->
-        <input
+        <FormInput
           v-model="searchQuery"
           type="text"
           placeholder="Buscar producto..."
           @keyup.enter="handleSearch"
-          class="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg focus:ring-blue-500 focus:border-blue-500"
         />
         <!-- Categoría -->
-        <select
+        <FormSelect
           v-model="selectedCategory"
-          class="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg focus:ring-blue-500 focus:border-blue-500"
-        >
-          <option value="">Todas las categorías</option>
-          <option value="Muebles Infantiles">Muebles Infantiles</option>
-          <option value="Decoración">Decoración</option>
-          <option value="Juguetes">Juguetes</option>
-          <option value="Ropa Cama">Ropa de Cama</option>
-        </select>
+          :options="categoryOptions"
+          placeholder="Todas las categorías"
+          @change="handleSearch"
+        />
         <!-- Marca -->
-        <select
+        <FormSelect
           v-model="selectedBrand"
-          class="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg focus:ring-blue-500 focus:border-blue-500"
-        >
-          <option value="">Todas las marcas</option>
-          <option value="DecoKids">DecoKids</option>
-          <option value="Peques">Peques</option>
-          <option value="MiniHome">MiniHome</option>
-          <option value="KidsPlay">KidsPlay</option>
-        </select>
+          :options="brandOptions"
+          placeholder="Todas las marcas"
+          @change="handleSearch"
+        />
         <!-- Rango de precio -->
-        <select
+        <FormSelect
           v-model="priceRange"
-          class="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg focus:ring-blue-500 focus:border-blue-500"
-        >
-          <option value="">Todos los precios</option>
-          <option value="1-20000">$1 - $20.000</option>
-          <option value="20001-50000">$20.001 - $50.000</option>
-          <option value="50001-150000">$50.001 - $150.000</option>
-          <option value="150001">$150.001+</option>
-        </select>
-        <!-- Nuevo Producto -->
-        <button @click="handleCreateNew" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition">
-          + Nuevo Producto
-        </button>
+          :options="priceOptions"
+          placeholder="Todos los precios"
+          @change="handleSearch"
+        />
       </div>
-    </div>
+    </Card>
 
     <!-- Vista Tabla -->
     <template v-if="viewMode === 'table'">
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <ProductsTable
-          :products="products"
-          :is-loading="isLoading"
-          :current-page="currentPage"
-          :items-per-page="itemsPerPage"
-          :start-item="startItem"
-          :end-item="endItem"
-          :total-items="totalItems"
-          :total-pages="totalPages"
-          @edit="handleEdit"
-          @delete="handleDelete"
-          @prev-page="handlePrevPage"
-          @next-page="handleNextPage"
-          @go-to-page="handleGoToPage"
-        />
-      </div>
+      <ProductsTable
+        :products="products"
+        :is-loading="isLoading"
+        :current-page="currentPage"
+        :items-per-page="itemsPerPage"
+        :start-item="startItem"
+        :end-item="endItem"
+        :total-items="totalItems"
+        :total-pages="totalPages"
+        @edit="handleEdit"
+        @delete="handleDelete"
+        @prev-page="handlePrevPage"
+        @next-page="handleNextPage"
+        @go-to-page="handleGoToPage"
+      />
     </template>
 
     <!-- Vista Cards -->

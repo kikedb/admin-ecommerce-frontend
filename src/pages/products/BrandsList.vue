@@ -1,6 +1,15 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
+import { Plus, Pencil, Trash2, ExternalLink } from 'lucide-vue-next'
 import { useNotification } from '@/composables/useNotification'
+
+import PageHeader from '@/components/Layout/PageHeader.vue'
+import DataTable from '@/components/ui/DataTable.vue'
+import Button from '@/components/ui/Button.vue'
+import Modal from '@/components/ui/Modal.vue'
+import FormInput from '@/components/Form/FormInput.vue'
+import FormSelect from '@/components/Form/FormSelect.vue'
+import StatusBadge from '@/components/ui/StatusBadge.vue'
 
 const { success: showNotification, error: showError } = useNotification()
 
@@ -10,11 +19,22 @@ const brands = ref([
   { id: 3, name: 'KidsPlay', website: '', status: 'inactive' }
 ])
 
+const columns = [
+  { key: 'name', label: 'Nombre' },
+  { key: 'website', label: 'Sitio Web' },
+  { key: 'status', label: 'Estado' }
+]
+
 const showModal = ref(false)
 const showDeleteModal = ref(false)
 const modalMode = ref('create') // 'create' or 'edit'
 const currentBrand = ref({ name: '', website: '', status: 'active' })
 const brandToDelete = ref(null)
+
+const statusOptions = [
+  { value: 'active', label: 'Activa' },
+  { value: 'inactive', label: 'Inactiva' }
+]
 
 const openCreateModal = () => {
   modalMode.value = 'create'
@@ -67,102 +87,76 @@ const confirmDelete = () => {
 </script>
 
 <template>
-  <div class="p-6 bg-gray-50 min-h-screen text-gray-800">
-    <div class="mb-6 flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-gray-900">Marcas</h1>
-      <button @click="openCreateModal" class="px-4 py-2 bg-gray-900 text-white rounded shadow-sm hover:bg-gray-800 text-sm font-medium transition">
-        Crear marca
-      </button>
-    </div>
+  <div>
+    <PageHeader title="Marcas">
+      <template #actions>
+        <Button variant="primary" @click="openCreateModal" class="gap-2">
+          <Plus class="w-4 h-4" /> Crear marca
+        </Button>
+      </template>
+    </PageHeader>
 
-    <!-- Lista de Marcas -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sitio Web</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="brand in brands" :key="brand.id" class="hover:bg-gray-50 transition">
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-              {{ brand.name }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              <a v-if="brand.website" :href="brand.website" target="_blank" class="text-blue-600 hover:underline">{{ brand.website }}</a>
-              <span v-else>-</span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <span v-if="brand.status === 'active'" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Activa</span>
-              <span v-else class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">Inactiva</span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-              <button @click="openEditModal(brand)" class="text-blue-600 hover:text-blue-900 mr-4">Editar</button>
-              <button @click="openDeleteModal(brand)" class="text-red-600 hover:text-red-900">Eliminar</button>
-            </td>
-          </tr>
-          <tr v-if="brands.length === 0">
-            <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-500">
-              No hay marcas creadas.
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <DataTable :columns="columns" :data="brands" empty-message="No hay marcas creadas.">
+      <template #cell-website="{ row }">
+        <a v-if="row.website" :href="row.website" target="_blank" class="inline-flex items-center gap-1 text-primary-600 hover:text-primary-700 hover:underline">
+          {{ row.website }}
+          <ExternalLink class="w-3 h-3" />
+        </a>
+        <span v-else class="text-gray-400">-</span>
+      </template>
+      <template #cell-status="{ row }">
+        <StatusBadge :status="row.status === 'active' ? 'success' : 'default'">
+          {{ row.status === 'active' ? 'Activa' : 'Inactiva' }}
+        </StatusBadge>
+      </template>
+      <template #actions="{ row }">
+        <div class="flex items-center justify-end gap-2">
+          <Button variant="ghost" size="sm" @click="openEditModal(row)" title="Editar">
+            <Pencil class="w-4 h-4 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400" />
+          </Button>
+          <Button variant="ghost" size="sm" @click="openDeleteModal(row)" title="Eliminar">
+            <Trash2 class="w-4 h-4 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400" />
+          </Button>
+        </div>
+      </template>
+    </DataTable>
 
     <!-- Modal Crear/Editar -->
-    <div v-if="showModal" class="fixed inset-0 z-50 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4">
-      <div class="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-          <h3 class="text-lg font-medium text-gray-900">{{ modalMode === 'create' ? 'Crear marca' : 'Editar marca' }}</h3>
-          <button @click="showModal = false" class="text-gray-400 hover:text-gray-500">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-          </button>
-        </div>
-        <div class="p-6 space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre de la Marca</label>
-            <input type="text" v-model="currentBrand.name" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Ej: Bilbola">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Sitio Web</label>
-            <input type="url" v-model="currentBrand.website" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="https://...">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-            <select v-model="currentBrand.status" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-              <option value="active">Activa</option>
-              <option value="inactive">Inactiva</option>
-            </select>
-          </div>
-        </div>
-        <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end space-x-3">
-          <button @click="showModal = false" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">Cancelar</button>
-          <button @click="saveBrand" class="px-4 py-2 bg-gray-900 border border-transparent rounded-md text-sm font-medium text-white hover:bg-gray-800">Guardar</button>
-        </div>
+    <Modal :is-open="showModal" :title="modalMode === 'create' ? 'Crear marca' : 'Editar marca'" @close="showModal = false">
+      <div class="space-y-4">
+        <FormInput
+          v-model="currentBrand.name"
+          label="Nombre de la Marca"
+          placeholder="Ej: Bilbola"
+          required
+        />
+        <FormInput
+          v-model="currentBrand.website"
+          type="url"
+          label="Sitio Web"
+          placeholder="https://..."
+        />
+        <FormSelect
+          v-model="currentBrand.status"
+          label="Estado"
+          :options="statusOptions"
+        />
       </div>
-    </div>
+      <template #footer>
+        <Button variant="outline" @click="showModal = false">Cancelar</Button>
+        <Button variant="primary" @click="saveBrand">Guardar</Button>
+      </template>
+    </Modal>
 
     <!-- Modal Eliminar -->
-    <div v-if="showDeleteModal" class="fixed inset-0 z-50 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4">
-      <div class="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-          <h3 class="text-lg font-medium text-gray-900">Eliminar marca</h3>
-          <button @click="showDeleteModal = false" class="text-gray-400 hover:text-gray-500">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-          </button>
-        </div>
-        <div class="p-6">
-          <p class="text-sm text-gray-600">¿Estás seguro de que deseas eliminar la marca <strong>{{ brandToDelete?.name }}</strong>? Esta acción no se puede deshacer.</p>
-        </div>
-        <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end space-x-3">
-          <button @click="showDeleteModal = false" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">Cancelar</button>
-          <button @click="confirmDelete" class="px-4 py-2 bg-red-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-red-700">Eliminar</button>
-        </div>
-      </div>
-    </div>
+    <Modal :is-open="showDeleteModal" title="Eliminar marca" @close="showDeleteModal = false">
+      <p class="text-sm text-gray-600 dark:text-gray-400">
+        ¿Estás seguro de que deseas eliminar la marca <strong>{{ brandToDelete?.name }}</strong>? Esta acción no se puede deshacer.
+      </p>
+      <template #footer>
+        <Button variant="outline" @click="showDeleteModal = false">Cancelar</Button>
+        <Button variant="danger" @click="confirmDelete">Eliminar</Button>
+      </template>
+    </Modal>
   </div>
 </template>
